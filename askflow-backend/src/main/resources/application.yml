@@ -1,0 +1,10 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: askflow-backend
+
+askflow:
+  ai-service:
+    base-url: http://127.0.0.1:8001
