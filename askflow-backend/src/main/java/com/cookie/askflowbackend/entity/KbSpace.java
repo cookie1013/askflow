@@ -100,4 +100,10 @@ public class KbSpace {
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
+    public void setDocumentCount(Integer documentCount) {
+        this.documentCount = documentCount;
+    }
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
 }
