@@ -18,17 +18,45 @@ def health():
 
 @app.post("/rag/ask", response_model=AskResponse)
 def ask(request: AskRequest):
-    fake_citation = Citation(
-        document_name="demo.md",
-        chunk_id="chunk-demo-001",
-        content="这里是临时引用内容，后续会替换成真实知识库检索结果。"
+    context_chunks = request.context_chunks or []
+
+    if not context_chunks:
+        return AskResponse(
+            answer=f"暂时没有从知识库中检索到相关内容。你提出的问题是：{request.question}",
+            citations=[],
+            debug={
+                "mode": "rag_mock",
+                "retrieval": "empty",
+                "context_count": 0
+            }
+        )
+
+    citations = [
+        Citation(
+            document_name=chunk.document_name,
+            chunk_id=chunk.chunk_id,
+            content=chunk.content
+        )
+        for chunk in context_chunks
+    ]
+
+    context_text = "\n".join(
+        [f"[{i + 1}] {chunk.content}" for i, chunk in enumerate(context_chunks)]
+    )
+
+    answer = (
+        f"根据知识库检索到的内容，针对问题“{request.question}”，可以得到如下结论：\n"
+        f"{context_chunks[0].content}\n\n"
+        f"以上回答主要依据已检索到的知识库片段生成。"
     )
 
     return AskResponse(
-        answer=f"这是 AskFlow AI 的临时回答。你提出的问题是：{request.question}",
-        citations=[fake_citation],
+        answer=answer,
+        citations=citations,
         debug={
-            "mode": "mock",
-            "retrieval": "not_enabled_yet"
+            "mode": "rag_mock",
+            "retrieval": "enabled",
+            "context_count": len(context_chunks),
+            "context_preview": context_text[:300]
         }
     )
