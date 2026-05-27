@@ -6,6 +6,7 @@ import java.util.Map;
 public class AiAskResponse {
 
     private String answer;
+    private Long sessionId;
 
     private List<CitationResponse> citations;
 
@@ -36,5 +37,13 @@ public class AiAskResponse {
 
     public void setDebug(Map<String, Object> debug) {
         this.debug = debug;
+    }
+
+    public Long getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(Long sessionId) {
+        this.sessionId = sessionId;
     }
 }

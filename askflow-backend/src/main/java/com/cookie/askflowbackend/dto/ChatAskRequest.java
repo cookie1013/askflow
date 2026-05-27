@@ -5,6 +5,13 @@ import jakarta.validation.constraints.NotNull;
 
 public class ChatAskRequest {
 
+    /**
+     * 会话 ID。
+     * 如果传了 sessionId，就把本次问答保存到已有会话；
+     * 如果不传 sessionId，后端会自动创建一个新会话。
+     */
+    private Long sessionId;
+
     @NotNull(message = "spaceId cannot be null")
     private Long spaceId;
 
@@ -28,6 +35,21 @@ public class ChatAskRequest {
         this.spaceId = spaceId;
         this.question = question;
         this.keyword = keyword;
+    }
+
+    public ChatAskRequest(Long sessionId, Long spaceId, String question, String keyword) {
+        this.sessionId = sessionId;
+        this.spaceId = spaceId;
+        this.question = question;
+        this.keyword = keyword;
+    }
+
+    public Long getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(Long sessionId) {
+        this.sessionId = sessionId;
     }
 
     public Long getSpaceId() {
