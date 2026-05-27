@@ -8,7 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.constraints.Positive;
 import org.springframework.validation.annotation.Validated;
-
+import com.cookie.askflowbackend.dto.ParseKbDocumentRequest;
 import java.util.List;
 
 @Validated
@@ -28,6 +28,14 @@ public class KbChunkController {
             Long documentId,
             @Valid @RequestBody CreateKbChunkRequest request) {
         return ApiResponse.success(kbChunkService.createChunk(documentId, request));
+    }
+    @PostMapping("/api/kb/documents/{documentId}/parse")
+    public ApiResponse<List<KbChunkResponse>> parseDocument(
+            @PathVariable
+            @Positive(message = "document id must be positive")
+            Long documentId,
+            @Valid @RequestBody ParseKbDocumentRequest request) {
+        return ApiResponse.success(kbChunkService.parseDocument(documentId, request));
     }
 
     @GetMapping("/api/kb/documents/{documentId}/chunks")

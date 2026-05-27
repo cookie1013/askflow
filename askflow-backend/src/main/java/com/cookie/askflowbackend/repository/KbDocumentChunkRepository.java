@@ -13,7 +13,7 @@ public interface KbDocumentChunkRepository extends JpaRepository<KbDocumentChunk
     List<KbDocumentChunk> findByDocumentIdAndStatusOrderByChunkIndexAsc(Long documentId, Integer status);
 
     long countByDocumentIdAndStatus(Long documentId, Integer status);
-
+    void deleteByDocumentId(Long documentId);
     @Query("""
             SELECT c
             FROM KbDocumentChunk c
