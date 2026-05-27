@@ -16,6 +16,11 @@ spring:
     show-sql: true
     open-in-view: false
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
 askflow:
   ai-service:
     base-url: http://127.0.0.1:8001
