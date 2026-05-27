@@ -6,9 +6,13 @@ import com.cookie.askflowbackend.dto.KbSpaceResponse;
 import com.cookie.askflowbackend.service.KbSpaceService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.constraints.Positive;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
+
+@Validated
 @RestController
 @RequestMapping("/api/kb/spaces")
 public class KbSpaceController {
@@ -30,7 +34,10 @@ public class KbSpaceController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<KbSpaceResponse> getSpaceDetail(@PathVariable Long id) {
+    public ApiResponse<KbSpaceResponse> getSpaceDetail(
+            @PathVariable
+            @Positive(message = "space id must be positive")
+            Long id) {
         return ApiResponse.success(kbSpaceService.getSpaceDetail(id));
     }
 }

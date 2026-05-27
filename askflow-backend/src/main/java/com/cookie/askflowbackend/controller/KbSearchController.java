@@ -1,5 +1,6 @@
 package com.cookie.askflowbackend.controller;
-
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import com.cookie.askflowbackend.common.ApiResponse;
 import com.cookie.askflowbackend.dto.KbSearchResponse;
 import com.cookie.askflowbackend.service.KbSearchService;
@@ -27,10 +28,12 @@ public class KbSearchController {
     public ApiResponse<List<KbSearchResponse>> search(
             @RequestParam
             @NotNull(message = "spaceId cannot be null")
+            @Positive(message = "spaceId must be positive")
             Long spaceId,
 
             @RequestParam
             @NotBlank(message = "keyword cannot be blank")
+            @Size(max = 200, message = "keyword length must be less than or equal to 200")
             String keyword,
 
             @RequestParam(defaultValue = "5")

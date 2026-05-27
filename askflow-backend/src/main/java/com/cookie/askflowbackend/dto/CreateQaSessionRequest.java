@@ -2,11 +2,13 @@ package com.cookie.askflowbackend.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 public class CreateQaSessionRequest {
 
     @NotNull(message = "spaceId cannot be null")
+    @Positive(message = "spaceId must be positive")
     private Long spaceId;
 
     @NotBlank(message = "session title cannot be blank")
