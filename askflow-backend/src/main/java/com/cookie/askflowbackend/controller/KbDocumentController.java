@@ -63,4 +63,12 @@ public class KbDocumentController {
             Long id) {
         return ApiResponse.success(kbDocumentService.getDocumentDetail(id));
     }
+    @DeleteMapping("/api/kb/documents/{id}")
+    public ApiResponse<Void> deleteDocument(
+            @PathVariable
+            @Positive(message = "document id must be positive")
+            Long id) {
+        kbDocumentService.deleteDocument(id);
+        return ApiResponse.success(null);
+    }
 }

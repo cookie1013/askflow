@@ -10,4 +10,6 @@ public interface KbDocumentRepository extends JpaRepository<KbDocument, Long> {
     List<KbDocument> findBySpaceIdAndStatusOrderByCreatedAtDesc(Long spaceId, Integer status);
 
     boolean existsBySpaceIdAndTitle(Long spaceId, String title);
+
+    boolean existsBySpaceIdAndTitleAndStatus(Long spaceId, String title, Integer status);
 }

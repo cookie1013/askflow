@@ -16,4 +16,5 @@ public interface KbDocumentService {
     KbDocumentResponse getDocumentDetail(Long id);
 
     UploadKbDocumentResponse uploadAndParseDocument(Long spaceId, MultipartFile file, Integer chunkSize);
+    void deleteDocument(Long id);
 }

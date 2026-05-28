@@ -16,7 +16,8 @@ import com.cookie.askflowbackend.dto.KbChunkResponse;
 import com.cookie.askflowbackend.dto.UploadKbDocumentResponse;
 import com.cookie.askflowbackend.service.KbChunkService;
 import org.springframework.web.multipart.MultipartFile;
-
+import com.cookie.askflowbackend.entity.KbDocumentChunk;
+import com.cookie.askflowbackend.repository.KbDocumentChunkRepository;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
@@ -29,12 +30,15 @@ public class KbDocumentServiceImpl implements KbDocumentService {
     private final KbDocumentRepository kbDocumentRepository;
     private final KbSpaceRepository kbSpaceRepository;
     private final KbChunkService kbChunkService;
+    private final KbDocumentChunkRepository kbDocumentChunkRepository;
     public KbDocumentServiceImpl(KbDocumentRepository kbDocumentRepository,
                                  KbSpaceRepository kbSpaceRepository,
-                                 KbChunkService kbChunkService) {
+                                 KbChunkService kbChunkService,
+                                 KbDocumentChunkRepository kbDocumentChunkRepository) {
         this.kbDocumentRepository = kbDocumentRepository;
         this.kbSpaceRepository = kbSpaceRepository;
         this.kbChunkService = kbChunkService;
+        this.kbDocumentChunkRepository = kbDocumentChunkRepository;
     }
 
     @Transactional
@@ -86,6 +90,10 @@ public class KbDocumentServiceImpl implements KbDocumentService {
     public KbDocumentResponse getDocumentDetail(Long id) {
         KbDocument document = kbDocumentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "document not found"));
+
+        if (document.getStatus() != 1) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "document not found");
+        }
 
         return toResponse(document);
     }
@@ -159,7 +167,7 @@ public class KbDocumentServiceImpl implements KbDocumentService {
 
         String title = buildTitleFromFilename(safeFilename);
 
-        if (kbDocumentRepository.existsBySpaceIdAndTitle(spaceId, title)) {
+        if (kbDocumentRepository.existsBySpaceIdAndTitleAndStatus(spaceId, title, 1)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "document title already exists in this space");
         }
 
@@ -196,5 +204,31 @@ public class KbDocumentServiceImpl implements KbDocumentService {
             return filename;
         }
         return filename.substring(0, dotIndex);
+    }
+    @Transactional
+    @Override
+    public void deleteDocument(Long id) {
+        KbDocument document = kbDocumentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "document not found"));
+
+        if (document.getStatus() != 1) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "document not found");
+        }
+
+        document.setStatus(0);
+        kbDocumentRepository.save(document);
+
+        List<KbDocumentChunk> chunks = kbDocumentChunkRepository.findByDocumentIdAndStatus(id, 1);
+        for (KbDocumentChunk chunk : chunks) {
+            chunk.setStatus(0);
+        }
+        kbDocumentChunkRepository.saveAll(chunks);
+
+        KbSpace space = kbSpaceRepository.findById(document.getSpaceId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "space not found"));
+
+        Integer currentCount = space.getDocumentCount() == null ? 0 : space.getDocumentCount();
+        space.setDocumentCount(Math.max(0, currentCount - 1));
+        kbSpaceRepository.save(space);
     }
 }
