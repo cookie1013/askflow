@@ -30,6 +30,9 @@ public class QaSession {
     @Column(name = "status", nullable = false)
     private Integer status;
 
+    @Column(name = "message_count", nullable = false)
+    private Integer messageCount;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -79,11 +82,23 @@ public class QaSession {
         return status;
     }
 
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Integer getMessageCount() {
+        return messageCount;
+    }
+
+    public void setMessageCount(Integer messageCount) {
+        this.messageCount = messageCount;
     }
 }

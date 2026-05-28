@@ -18,6 +18,8 @@ public class QaMessage {
     @Column(name = "session_id", nullable = false)
     private Long sessionId;
 
+    @Column(name = "space_id", nullable = false)
+    private Long spaceId;
     /**
      * 消息角色：USER / ASSISTANT
      */
@@ -30,6 +32,8 @@ public class QaMessage {
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Column(name = "status", nullable = false)
+    private Integer status;
     /**
      * AI 回答对应的引用来源 JSON
      */
@@ -65,6 +69,14 @@ public class QaMessage {
         this.sessionId = sessionId;
     }
 
+    public Long getSpaceId() {
+        return spaceId;
+    }
+
+    public void setSpaceId(Long spaceId) {
+        this.spaceId = spaceId;
+    }
+
     public String getRole() {
         return role;
     }
@@ -81,7 +93,13 @@ public class QaMessage {
         this.content = content;
     }
 
+    public Integer getStatus() {
+        return status;
+    }
 
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
 
     public String getCitationsJson() {
         return citationsJson;
