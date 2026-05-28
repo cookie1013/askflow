@@ -3,6 +3,7 @@ package com.cookie.askflowbackend.repository;
 import com.cookie.askflowbackend.entity.KbDocumentChunk;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -11,9 +12,13 @@ import java.util.List;
 public interface KbDocumentChunkRepository extends JpaRepository<KbDocumentChunk, Long> {
 
     List<KbDocumentChunk> findByDocumentIdAndStatusOrderByChunkIndexAsc(Long documentId, Integer status);
+
     List<KbDocumentChunk> findByDocumentIdAndStatus(Long documentId, Integer status);
+
     long countByDocumentIdAndStatus(Long documentId, Integer status);
+
     void deleteByDocumentId(Long documentId);
+
     @Query("""
             SELECT c
             FROM KbDocumentChunk c
@@ -25,4 +30,13 @@ public interface KbDocumentChunkRepository extends JpaRepository<KbDocumentChunk
     List<KbDocumentChunk> searchByKeyword(@Param("spaceId") Long spaceId,
                                           @Param("keyword") String keyword,
                                           Pageable pageable);
+
+    @Modifying
+    @Query("""
+            UPDATE KbDocumentChunk c
+            SET c.status = 0
+            WHERE c.spaceId = :spaceId
+              AND c.status = 1
+            """)
+    int softDeleteBySpaceId(@Param("spaceId") Long spaceId);
 }

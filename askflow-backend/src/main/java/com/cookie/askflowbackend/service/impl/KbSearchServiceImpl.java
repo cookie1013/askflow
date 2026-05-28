@@ -3,6 +3,7 @@ package com.cookie.askflowbackend.service.impl;
 import com.cookie.askflowbackend.dto.KbSearchResponse;
 import com.cookie.askflowbackend.entity.KbDocument;
 import com.cookie.askflowbackend.entity.KbDocumentChunk;
+import com.cookie.askflowbackend.entity.KbSpace;
 import com.cookie.askflowbackend.repository.KbDocumentChunkRepository;
 import com.cookie.askflowbackend.repository.KbDocumentRepository;
 import com.cookie.askflowbackend.repository.KbSpaceRepository;
@@ -37,7 +38,10 @@ public class KbSearchServiceImpl implements KbSearchService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "spaceId cannot be null");
         }
 
-        if (!kbSpaceRepository.existsById(spaceId)) {
+        KbSpace space = kbSpaceRepository.findById(spaceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "space not found"));
+
+        if (!Integer.valueOf(1).equals(space.getStatus())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "space not found");
         }
 

@@ -12,4 +12,6 @@ public interface KbSpaceService {
     List<KbSpaceResponse> listSpaces();
 
     KbSpaceResponse getSpaceDetail(Long id);
+
+    void deleteSpace(Long id);
 }

@@ -40,4 +40,12 @@ public class KbSpaceController {
             Long id) {
         return ApiResponse.success(kbSpaceService.getSpaceDetail(id));
     }
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> deleteSpace(
+            @PathVariable
+            @Positive(message = "space id must be positive")
+            Long id) {
+        kbSpaceService.deleteSpace(id);
+        return ApiResponse.success(null);
+    }
 }

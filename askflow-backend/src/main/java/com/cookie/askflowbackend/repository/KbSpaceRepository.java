@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface KbSpaceRepository extends JpaRepository<KbSpace, Long> {
 
-    boolean existsByName(String name);
-
     List<KbSpace> findByStatusOrderByCreatedAtDesc(Integer status);
+
+    boolean existsByNameAndStatus(String name, Integer status);
 }
