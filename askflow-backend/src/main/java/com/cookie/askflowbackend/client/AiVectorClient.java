@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import com.cookie.askflowbackend.dto.AiVectorSearchRequest;
+import com.cookie.askflowbackend.dto.AiVectorSearchResponse;
 
 @Component
 public class AiVectorClient {
@@ -45,6 +47,34 @@ public class AiVectorClient {
 
         } catch (JsonProcessingException e) {
             throw new RuntimeException("failed to serialize vector upsert request", e);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    public AiVectorSearchResponse search(AiVectorSearchRequest request) {
+        try {
+            String jsonBody = objectMapper.writeValueAsString(request);
+            System.out.println("Vector search request body = " + jsonBody);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAccept(java.util.List.of(MediaType.APPLICATION_JSON));
+
+            HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
+
+            ResponseEntity<AiVectorSearchResponse> response = restTemplate.exchange(
+                    aiServiceBaseUrl + "/vector/search",
+                    HttpMethod.POST,
+                    entity,
+                    AiVectorSearchResponse.class
+            );
+
+            return response.getBody();
+
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("failed to serialize vector search request", e);
         } catch (Exception e) {
             e.printStackTrace();
             throw e;

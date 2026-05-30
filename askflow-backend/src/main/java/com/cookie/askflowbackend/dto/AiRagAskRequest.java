@@ -23,6 +23,7 @@ public class AiRagAskRequest {
         return question;
     }
 
+    @JsonProperty("context_chunks")
     public List<AiContextChunk> getContextChunks() {
         return contextChunks;
     }
