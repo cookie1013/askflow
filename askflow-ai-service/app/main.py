@@ -1,6 +1,14 @@
 from fastapi import FastAPI
 from app.schemas import AskRequest, AskResponse, Citation
 
+from app.schemas import (
+    VectorSearchRequest,
+    VectorSearchResponse,
+    VectorUpsertRequest,
+    VectorUpsertResponse,
+)
+from app.vector_store import search_chunks, upsert_chunks
+
 app = FastAPI(
     title="AskFlow AI Service",
     description="RAG and Agent service for AskFlow AI platform",
@@ -59,4 +67,30 @@ def ask(request: AskRequest):
             "context_count": len(context_chunks),
             "context_preview": context_text[:300]
         }
+    )
+@app.post("/vector/upsert", response_model=VectorUpsertResponse)
+def vector_upsert(request: VectorUpsertRequest):
+    chunks = [chunk.model_dump() for chunk in request.chunks]
+    indexed_count = upsert_chunks(chunks)
+    return VectorUpsertResponse(indexed_count=indexed_count)
+
+
+@app.post("/vector/search", response_model=VectorSearchResponse)
+def vector_search(request: VectorSearchRequest):
+    hits = search_chunks(
+        space_id=request.space_id,
+        question=request.question,
+        top_k=request.top_k,
+        min_score=request.min_score,
+    )
+
+    return VectorSearchResponse(
+        hits=hits,
+        debug={
+            "retrieval": "vector",
+            "space_id": request.space_id,
+            "top_k": request.top_k,
+            "min_score": request.min_score,
+            "matched_count": len(hits),
+        },
     )

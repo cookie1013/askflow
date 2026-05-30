@@ -14,15 +14,19 @@ import jakarta.validation.constraints.Min;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
+import com.cookie.askflowbackend.dto.VectorizeKbDocumentResponse;
+import com.cookie.askflowbackend.service.KbVectorService;
 
 @Validated
 @RestController
 public class KbDocumentController {
 
     private final KbDocumentService kbDocumentService;
+    private final KbVectorService kbVectorService;
+    public KbDocumentController(KbDocumentService kbDocumentService,KbVectorService kbVectorService) {
 
-    public KbDocumentController(KbDocumentService kbDocumentService) {
         this.kbDocumentService = kbDocumentService;
+        this.kbVectorService = kbVectorService;
     }
 
     @PostMapping("/api/kb/spaces/{spaceId}/documents")
@@ -47,6 +51,14 @@ public class KbDocumentController {
             @Max(value = 2000, message = "chunkSize must be less than or equal to 2000")
             Integer chunkSize) {
         return ApiResponse.success(kbDocumentService.uploadAndParseDocument(spaceId, file, chunkSize));
+    }
+
+    @PostMapping("/api/kb/documents/{id}/vectorize")
+    public ApiResponse<VectorizeKbDocumentResponse> vectorizeDocument(
+            @PathVariable
+            @Positive(message = "document id must be positive")
+            Long id) {
+        return ApiResponse.success(kbVectorService.vectorizeDocument(id));
     }
     @GetMapping("/api/kb/spaces/{spaceId}/documents")
     public ApiResponse<List<KbDocumentResponse>> listDocuments(

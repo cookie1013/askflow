@@ -18,6 +18,8 @@ env/
 # IDE
 .idea/
 .vscode/
+.idea/
+*.iml
 
 # Logs
 *.log
@@ -32,3 +34,17 @@ target/
 
 # Upload files
 uploads/
+
+
+# Chroma local vector database
+askflow-ai-service/data/chroma/
+
+
+# Java build
+target/
+askflow-backend/target/
+hf-cache/
+*.safetensors
+*.bin
+*.pt
+*.pth
