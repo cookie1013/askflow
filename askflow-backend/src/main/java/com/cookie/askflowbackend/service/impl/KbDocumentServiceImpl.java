@@ -23,6 +23,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.List;
+import com.cookie.askflowbackend.dto.VectorizeKbDocumentResponse;
+import com.cookie.askflowbackend.service.KbVectorService;
 
 @Service
 public class KbDocumentServiceImpl implements KbDocumentService {
@@ -31,14 +33,17 @@ public class KbDocumentServiceImpl implements KbDocumentService {
     private final KbSpaceRepository kbSpaceRepository;
     private final KbChunkService kbChunkService;
     private final KbDocumentChunkRepository kbDocumentChunkRepository;
+    private final KbVectorService kbVectorService;
     public KbDocumentServiceImpl(KbDocumentRepository kbDocumentRepository,
                                  KbSpaceRepository kbSpaceRepository,
                                  KbChunkService kbChunkService,
-                                 KbDocumentChunkRepository kbDocumentChunkRepository) {
+                                 KbDocumentChunkRepository kbDocumentChunkRepository,
+                                 KbVectorService kbVectorService) {
         this.kbDocumentRepository = kbDocumentRepository;
         this.kbSpaceRepository = kbSpaceRepository;
         this.kbChunkService = kbChunkService;
         this.kbDocumentChunkRepository = kbDocumentChunkRepository;
+        this.kbVectorService = kbVectorService;
     }
 
     @Transactional
@@ -192,10 +197,29 @@ public class KbDocumentServiceImpl implements KbDocumentService {
                 new ParseKbDocumentRequest(content, chunkSize)
         );
 
+        Integer indexedCount = 0;
+        String vectorStatus = "SUCCESS";
+
+        try {
+            VectorizeKbDocumentResponse vectorizeResponse = kbVectorService.vectorizeDocument(saved.getId());
+
+            if (vectorizeResponse != null && vectorizeResponse.getIndexedCount() != null) {
+                indexedCount = vectorizeResponse.getIndexedCount();
+            }
+        } catch (Exception e) {
+            vectorStatus = "FAILED";
+            e.printStackTrace();
+        }
+
         KbDocument parsedDocument = kbDocumentRepository.findById(saved.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "document not found"));
 
-        return new UploadKbDocumentResponse(toResponse(parsedDocument), chunks);
+        return new UploadKbDocumentResponse(
+                toResponse(parsedDocument),
+                chunks,
+                indexedCount,
+                vectorStatus
+        );
     }
 
     private String buildTitleFromFilename(String filename) {
