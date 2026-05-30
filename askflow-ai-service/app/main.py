@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.schemas import AskRequest, AskResponse, Citation
+from app.llm_client import generate_llm_answer
 
 from app.schemas import (
     VectorSearchRequest,
@@ -25,48 +26,51 @@ def health():
 
 
 @app.post("/rag/ask", response_model=AskResponse)
-def ask(request: AskRequest):
+def rag_ask(request: AskRequest):
     context_chunks = request.context_chunks or []
 
-    if not context_chunks:
-        return AskResponse(
-            answer=f"暂时没有从知识库中检索到相关内容。你提出的问题是：{request.question}",
-            citations=[],
-            debug={
-                "mode": "rag_mock",
-                "retrieval": "empty",
-                "context_count": 0
+    context_dicts = []
+    for chunk in context_chunks:
+        context_dicts.append(
+            {
+                "chunk_id": chunk.chunk_id,
+                "document_name": chunk.document_name,
+                "content": chunk.content,
             }
         )
 
+    answer, llm_debug = generate_llm_answer(
+        question=request.question,
+        context_chunks=context_dicts,
+    )
+
     citations = [
         Citation(
+            content=chunk.content,
             document_name=chunk.document_name,
             chunk_id=chunk.chunk_id,
-            content=chunk.content
         )
         for chunk in context_chunks
     ]
 
-    context_text = "\n".join(
-        [f"[{i + 1}] {chunk.content}" for i, chunk in enumerate(context_chunks)]
+    context_preview = "\n".join(
+        [
+            f"[{index + 1}] {chunk.content}"
+            for index, chunk in enumerate(context_chunks)
+        ]
     )
 
-    answer = (
-        f"根据知识库检索到的内容，针对问题“{request.question}”，可以得到如下结论：\n"
-        f"{context_chunks[0].content}\n\n"
-        f"以上回答主要依据已检索到的知识库片段生成。"
-    )
+    debug = {
+        **llm_debug,
+        "retrieval": "enabled" if len(context_chunks) > 0 else "empty",
+        "context_count": len(context_chunks),
+        "context_preview": context_preview,
+    }
 
     return AskResponse(
         answer=answer,
         citations=citations,
-        debug={
-            "mode": "rag_mock",
-            "retrieval": "enabled",
-            "context_count": len(context_chunks),
-            "context_preview": context_text[:300]
-        }
+        debug=debug,
     )
 @app.post("/vector/upsert", response_model=VectorUpsertResponse)
 def vector_upsert(request: VectorUpsertRequest):
