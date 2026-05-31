@@ -36,6 +36,7 @@ def rag_ask(request: AskRequest):
                 "chunk_id": chunk.chunk_id,
                 "document_name": chunk.document_name,
                 "content": chunk.content,
+                "score": chunk.score,
             }
         )
 
@@ -55,15 +56,24 @@ def rag_ask(request: AskRequest):
 
     context_preview = "\n".join(
         [
-            f"[{index + 1}] {chunk.content}"
+            f"[{index + 1}] score={chunk.score} | {chunk.content}"
             for index, chunk in enumerate(context_chunks)
         ]
     )
+    retrieval_scores = [
+        {
+            "chunk_id": chunk.chunk_id,
+            "document_name": chunk.document_name,
+            "score": chunk.score,
+        }
+        for chunk in context_chunks
+    ]
 
     debug = {
         **llm_debug,
         "retrieval": "enabled" if len(context_chunks) > 0 else "empty",
         "context_count": len(context_chunks),
+        "retrieval_scores": retrieval_scores,
         "context_preview": context_preview,
     }
 

@@ -19,8 +19,8 @@ import java.util.List;
 @RequestMapping("/api/chat")
 public class ChatController {
 
-    private static final int DEFAULT_TOP_K = 5;
-    private static final double DEFAULT_MIN_SCORE = 0.1;
+    private static final int DEFAULT_TOP_K = 3;
+    private static final double DEFAULT_MIN_SCORE = 0.35;
 
     private final AiClient aiClient;
     private final AiVectorClient aiVectorClient;
@@ -62,7 +62,8 @@ public class ChatController {
                 .map(hit -> new AiContextChunk(
                         String.valueOf(hit.getChunkId()),
                         hit.getDocumentTitle(),
-                        hit.getContent()
+                        hit.getContent(),
+                        hit.getScore()
                 ))
                 .toList();
 

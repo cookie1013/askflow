@@ -1,8 +1,13 @@
 import os
+from pathlib import Path
 from typing import Any
 
 import requests
+from dotenv import load_dotenv
 
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "mock").lower()
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")

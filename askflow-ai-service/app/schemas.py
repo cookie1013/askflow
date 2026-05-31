@@ -6,6 +6,7 @@ class ContextChunk(BaseModel):
     chunk_id: str
     document_name: str
     content: str
+    score: float | None = None
 
 
 class AskRequest(BaseModel):
