@@ -200,3 +200,23 @@ http://localhost:8000
 * RAG 问答返回引用来源，支持追踪答案依据的文档片段。
 * 支持 QA 会话历史管理，能够保存用户问题、AI 回复、引用信息和 debug 信息。
 * 支持续问复用 sessionId，删除后的会话禁止继续使用，保证会话状态一致性。
+## RAG 问答能力
+
+AskFlow 已从早期关键词检索问答升级为基于 Embedding 的向量 RAG 问答链路。
+
+当前 RAG 流程：
+
+```text
+用户问题
+  ↓
+FastAPI 生成 query embedding
+  ↓
+ChromaDB 语义检索 topK 知识片段
+  ↓
+根据 min_score 过滤低相关片段
+  ↓
+构造上下文增强 prompt
+  ↓
+调用 DeepSeek 真实大模型生成答案
+  ↓
+返回 answer、citations、retrieval_scores 和 debug 信息
