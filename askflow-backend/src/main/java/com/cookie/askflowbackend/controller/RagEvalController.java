@@ -1,0 +1,48 @@
+package com.cookie.askflowbackend.controller;
+
+import com.cookie.askflowbackend.common.ApiResponse;
+import com.cookie.askflowbackend.dto.CreateRagEvalCaseRequest;
+import com.cookie.askflowbackend.dto.RagEvalSummaryResponse;
+import com.cookie.askflowbackend.entity.RagEvalCase;
+import com.cookie.askflowbackend.entity.RagEvalResult;
+import com.cookie.askflowbackend.service.RagEvalService;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/rag/eval")
+public class RagEvalController {
+
+    private final RagEvalService ragEvalService;
+
+    public RagEvalController(RagEvalService ragEvalService) {
+        this.ragEvalService = ragEvalService;
+    }
+
+    @PostMapping("/cases")
+    public ApiResponse<RagEvalCase> createCase(@Valid @RequestBody CreateRagEvalCaseRequest request) {
+        return ApiResponse.success(ragEvalService.createCase(request));
+    }
+
+    @GetMapping("/cases")
+    public ApiResponse<List<RagEvalCase>> listCases(@RequestParam Long spaceId) {
+        return ApiResponse.success(ragEvalService.listCases(spaceId));
+    }
+
+    @PostMapping("/cases/{id}/run")
+    public ApiResponse<RagEvalResult> runCase(@PathVariable Long id) {
+        return ApiResponse.success(ragEvalService.runCase(id));
+    }
+
+    @GetMapping("/cases/{id}/results")
+    public ApiResponse<List<RagEvalResult>> listCaseResults(@PathVariable Long id) {
+        return ApiResponse.success(ragEvalService.listResultsByCase(id));
+    }
+
+    @GetMapping("/summary")
+    public ApiResponse<RagEvalSummaryResponse> summary(@RequestParam Long spaceId) {
+        return ApiResponse.success(ragEvalService.summary(spaceId));
+    }
+}
