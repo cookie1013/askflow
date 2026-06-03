@@ -155,24 +155,42 @@ public class RagEvalService {
 
         return ragEvalResultRepository.save(result);
     }
+    public List<RagEvalResult> runAll(Long spaceId) {
+        List<RagEvalCase> cases = ragEvalCaseRepository.findBySpaceIdAndStatusOrderByCreatedAtDesc(spaceId, 1);
 
+        List<RagEvalResult> results = new ArrayList<>();
+        for (RagEvalCase evalCase : cases) {
+            results.add(runCase(evalCase.getId()));
+        }
+
+        return results;
+    }
     public RagEvalSummaryResponse summary(Long spaceId) {
-        List<RagEvalResult> results = ragEvalResultRepository.findBySpaceIdOrderByCreatedAtDesc(spaceId);
+        List<RagEvalCase> cases = ragEvalCaseRepository.findBySpaceIdAndStatusOrderByCreatedAtDesc(spaceId, 1);
 
-        long total = results.size();
-        long passed = results.stream()
+        List<RagEvalResult> latestResults = new ArrayList<>();
+        for (RagEvalCase evalCase : cases) {
+            ragEvalResultRepository.findFirstByCaseIdOrderByCreatedAtDesc(evalCase.getId())
+                    .ifPresent(latestResults::add);
+        }
+
+        long caseTotal = cases.size();
+        long evaluated = latestResults.size();
+        long passed = latestResults.stream()
                 .filter(result -> Boolean.TRUE.equals(result.getPassed()))
                 .count();
 
-        double passRate = total == 0 ? 0.0 : round(passed * 1.0 / total);
-        double avgTotalTimeMs = results.stream()
+        double passRate = evaluated == 0 ? 0.0 : round(passed * 1.0 / evaluated);
+
+        double avgTotalTimeMs = latestResults.stream()
                 .filter(result -> result.getTotalTimeMs() != null)
                 .mapToLong(RagEvalResult::getTotalTimeMs)
                 .average()
                 .orElse(0.0);
 
         return new RagEvalSummaryResponse(
-                total,
+                caseTotal,
+                evaluated,
                 passed,
                 passRate,
                 Math.round(avgTotalTimeMs * 100.0) / 100.0

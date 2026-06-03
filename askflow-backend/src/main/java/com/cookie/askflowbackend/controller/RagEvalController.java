@@ -45,4 +45,8 @@ public class RagEvalController {
     public ApiResponse<RagEvalSummaryResponse> summary(@RequestParam Long spaceId) {
         return ApiResponse.success(ragEvalService.summary(spaceId));
     }
+    @PostMapping("/run-all")
+    public ApiResponse<List<RagEvalResult>> runAll(@RequestParam Long spaceId) {
+        return ApiResponse.success(ragEvalService.runAll(spaceId));
+    }
 }
