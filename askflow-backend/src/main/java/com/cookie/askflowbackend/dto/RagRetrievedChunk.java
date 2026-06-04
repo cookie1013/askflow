@@ -9,10 +9,11 @@ public class RagRetrievedChunk {
     private String content;
     private Double score;
     private String source; // vector / keyword / hybrid
-
+    private Integer pageNo;
+    private String chunkType;
+    private String sectionTitle;
     public RagRetrievedChunk() {
     }
-
     public RagRetrievedChunk(Long chunkId,
                              Long documentId,
                              String documentTitle,
@@ -20,6 +21,19 @@ public class RagRetrievedChunk {
                              String content,
                              Double score,
                              String source) {
+        this(chunkId, documentId, documentTitle, chunkIndex, content, score, source,
+                null, null, null);
+    }
+    public RagRetrievedChunk(Long chunkId,
+                             Long documentId,
+                             String documentTitle,
+                             Integer chunkIndex,
+                             String content,
+                             Double score,
+                             String source,
+                             Integer pageNo,
+                             String chunkType,
+                             String sectionTitle) {
         this.chunkId = chunkId;
         this.documentId = documentId;
         this.documentTitle = documentTitle;
@@ -27,6 +41,9 @@ public class RagRetrievedChunk {
         this.content = content;
         this.score = score;
         this.source = source;
+        this.pageNo = pageNo;
+        this.chunkType = chunkType;
+        this.sectionTitle = sectionTitle;
     }
 
     public Long getChunkId() {
@@ -63,5 +80,28 @@ public class RagRetrievedChunk {
 
     public void setSource(String source) {
         this.source = source;
+    }
+    public Integer getPageNo() {
+        return pageNo;
+    }
+
+    public void setPageNo(Integer pageNo) {
+        this.pageNo = pageNo;
+    }
+
+    public String getChunkType() {
+        return chunkType;
+    }
+
+    public void setChunkType(String chunkType) {
+        this.chunkType = chunkType;
+    }
+
+    public String getSectionTitle() {
+        return sectionTitle;
+    }
+
+    public void setSectionTitle(String sectionTitle) {
+        this.sectionTitle = sectionTitle;
     }
 }

@@ -38,16 +38,30 @@ def upsert_chunks(chunks: list[dict[str, Any]]) -> int:
 
         ids.append(str(chunk_id))
         documents.append(chunk["content"])
-        metadatas.append(
-            {
-                "chunk_id": chunk_id,
-                "space_id": int(chunk["space_id"]),
-                "document_id": int(chunk["document_id"]),
-                "document_title": chunk.get("document_title") or "",
-                "chunk_index": int(chunk.get("chunk_index") or 0),
-                "token_count": int(chunk.get("token_count") or 0),
-            }
-        )
+
+        metadata = {
+            "chunk_id": chunk_id,
+            "space_id": int(chunk["space_id"]),
+            "document_id": int(chunk["document_id"]),
+            "document_title": chunk.get("document_title") or "",
+            "chunk_index": int(chunk.get("chunk_index") or 0),
+            "token_count": int(chunk.get("token_count") or 0),
+        }
+
+        # PDF 元数据：只在有值时写入 Chroma metadata，避免 None 导致 ChromaDB 不稳定
+        page_no = chunk.get("page_no")
+        if page_no is not None:
+            metadata["page_no"] = int(page_no)
+
+        chunk_type = chunk.get("chunk_type")
+        if chunk_type:
+            metadata["chunk_type"] = chunk_type
+
+        section_title = chunk.get("section_title")
+        if section_title:
+            metadata["section_title"] = section_title
+
+        metadatas.append(metadata)
 
     embeddings = _embed_texts(documents)
 
@@ -94,6 +108,11 @@ def search_chunks(space_id: int, question: str, top_k: int = 5, min_score: float
                 "token_count": metadata["token_count"],
                 "content": document,
                 "score": round(score, 4),
+
+                # PDF citation 元数据：旧 txt/md chunk 没有这些字段，所以必须用 get
+                "page_no": metadata.get("page_no"),
+                "chunk_type": metadata.get("chunk_type"),
+                "section_title": metadata.get("section_title"),
             }
         )
 

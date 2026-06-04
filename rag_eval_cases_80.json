@@ -1,0 +1,998 @@
+{
+  "cases": [
+    {
+      "spaceId": 1,
+      "question": "Redis 未命中时系统会怎么处理？",
+      "expectedChunkIds": [
+        "4"
+      ],
+      "expectedAnswerKeywords": [
+        "MySQL",
+        "回填"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "缓存里面没有查到原始链接时怎么办？",
+      "expectedChunkIds": [
+        "4"
+      ],
+      "expectedAnswerKeywords": [
+        "MySQL",
+        "回填"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "短链跳转时 Redis 没有命中怎么办？",
+      "expectedChunkIds": [
+        "4"
+      ],
+      "expectedAnswerKeywords": [
+        "MySQL",
+        "回填"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "缓存未命中后系统会直接失败吗？",
+      "expectedChunkIds": [
+        "4"
+      ],
+      "expectedAnswerKeywords": [
+        "MySQL",
+        "回填"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "Redis 查不到短码映射时会走哪里？",
+      "expectedChunkIds": [
+        "4"
+      ],
+      "expectedAnswerKeywords": [
+        "MySQL",
+        "回填"
+      ],
+      "shouldRefuse": false,
+      "caseType": "keyword_short"
+    },
+    {
+      "spaceId": 1,
+      "question": "缓存 miss 后怎么处理？",
+      "expectedChunkIds": [
+        "4"
+      ],
+      "expectedAnswerKeywords": [
+        "MySQL",
+        "回填"
+      ],
+      "shouldRefuse": false,
+      "caseType": "mixed_cn_en"
+    },
+    {
+      "spaceId": 1,
+      "question": "短链原始链接不在缓存里怎么办？",
+      "expectedChunkIds": [
+        "4"
+      ],
+      "expectedAnswerKeywords": [
+        "MySQL",
+        "回填"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "Redis 没查到原始链接是否会回源数据库？",
+      "expectedChunkIds": [
+        "4"
+      ],
+      "expectedAnswerKeywords": [
+        "MySQL",
+        "回源"
+      ],
+      "shouldRefuse": false,
+      "caseType": "keyword_short"
+    },
+    {
+      "spaceId": 1,
+      "question": "短码映射缓存为空时系统怎么兜底？",
+      "expectedChunkIds": [
+        "4"
+      ],
+      "expectedAnswerKeywords": [
+        "MySQL",
+        "缓存"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "跳转链路 Redis miss 会不会查 MySQL？",
+      "expectedChunkIds": [
+        "4"
+      ],
+      "expectedAnswerKeywords": [
+        "MySQL",
+        "回填"
+      ],
+      "shouldRefuse": false,
+      "caseType": "mixed_cn_en"
+    },
+    {
+      "spaceId": 1,
+      "question": "缓存没有数据时如何恢复短链映射？",
+      "expectedChunkIds": [
+        "4"
+      ],
+      "expectedAnswerKeywords": [
+        "MySQL",
+        "回填"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "Redis 未命中后的回填流程是什么？",
+      "expectedChunkIds": [
+        "4"
+      ],
+      "expectedAnswerKeywords": [
+        "MySQL",
+        "回填"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "短链访问先查 Redis 还是 MySQL？",
+      "expectedChunkIds": [
+        "4"
+      ],
+      "expectedAnswerKeywords": [
+        "Redis",
+        "MySQL"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "Redis 缓存和 MySQL 在短链跳转中怎么配合？",
+      "expectedChunkIds": [
+        "4"
+      ],
+      "expectedAnswerKeywords": [
+        "Redis",
+        "MySQL"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "缓存查不到原始链接时需要重新写入缓存吗？",
+      "expectedChunkIds": [
+        "4"
+      ],
+      "expectedAnswerKeywords": [
+        "回填",
+        "缓存"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "缓存失效瞬间大量请求同时回源数据库怎么办？",
+      "expectedChunkIds": [
+        "16"
+      ],
+      "expectedAnswerKeywords": [
+        "互斥锁"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_recall"
+    },
+    {
+      "spaceId": 1,
+      "question": "缓存击穿风险较高时应该怎么处理？",
+      "expectedChunkIds": [
+        "16"
+      ],
+      "expectedAnswerKeywords": [
+        "互斥锁",
+        "逻辑过期"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "如何避免大量请求在缓存失效时同时打到数据库？",
+      "expectedChunkIds": [
+        "16"
+      ],
+      "expectedAnswerKeywords": [
+        "互斥锁"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "缓存失效导致并发回源时有什么保护方案？",
+      "expectedChunkIds": [
+        "16"
+      ],
+      "expectedAnswerKeywords": [
+        "互斥锁",
+        "逻辑过期"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "短链缓存击穿怎么解决？",
+      "expectedChunkIds": [
+        "16"
+      ],
+      "expectedAnswerKeywords": [
+        "互斥锁",
+        "逻辑过期"
+      ],
+      "shouldRefuse": false,
+      "caseType": "keyword_short"
+    },
+    {
+      "spaceId": 1,
+      "question": "热点短链缓存过期时怎么防止数据库被打爆？",
+      "expectedChunkIds": [
+        "16"
+      ],
+      "expectedAnswerKeywords": [
+        "互斥锁",
+        "逻辑过期"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "为什么缓存失效时不能让所有请求都查库？",
+      "expectedChunkIds": [
+        "16"
+      ],
+      "expectedAnswerKeywords": [
+        "互斥锁",
+        "逻辑过期"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "逻辑过期策略适合解决什么问题？",
+      "expectedChunkIds": [
+        "16"
+      ],
+      "expectedAnswerKeywords": [
+        "逻辑过期",
+        "回源"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "互斥锁在缓存击穿中起什么作用？",
+      "expectedChunkIds": [
+        "16"
+      ],
+      "expectedAnswerKeywords": [
+        "互斥锁",
+        "数据库"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "缓存同时失效时如何降低回源压力？",
+      "expectedChunkIds": [
+        "16"
+      ],
+      "expectedAnswerKeywords": [
+        "互斥锁",
+        "逻辑过期"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "高并发访问同一短链时缓存过期怎么办？",
+      "expectedChunkIds": [
+        "16"
+      ],
+      "expectedAnswerKeywords": [
+        "互斥锁",
+        "逻辑过期"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "怎样避免缓存过期瞬间数据库压力暴涨？",
+      "expectedChunkIds": [
+        "16"
+      ],
+      "expectedAnswerKeywords": [
+        "互斥锁",
+        "逻辑过期"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "缓存击穿和 Redis 未命中有什么应对方案？",
+      "expectedChunkIds": [
+        "16"
+      ],
+      "expectedAnswerKeywords": [
+        "互斥锁",
+        "逻辑过期"
+      ],
+      "shouldRefuse": false,
+      "caseType": "mixed_topic"
+    },
+    {
+      "spaceId": 1,
+      "question": "大量短链请求同时查库时应该加什么保护？",
+      "expectedChunkIds": [
+        "16"
+      ],
+      "expectedAnswerKeywords": [
+        "互斥锁"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "逻辑过期和互斥锁分别用于缓解什么问题？",
+      "expectedChunkIds": [
+        "16"
+      ],
+      "expectedAnswerKeywords": [
+        "互斥锁",
+        "逻辑过期"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "访问统计为什么不要同步写数据库？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "RocketMQ",
+        "异步"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "RocketMQ 在访问统计中起什么作用？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "RocketMQ",
+        "PV"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "为什么 PV 更新不适合放在跳转主链路？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "PV",
+        "异步"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "短链访问日志为什么要异步落库？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "异步",
+        "访问日志"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "访问统计如何避免影响短链跳转性能？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "RocketMQ",
+        "异步"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "跳转接口里直接写 PV 有什么问题？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "PV",
+        "异步"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "访问事件应该怎么异步处理？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "RocketMQ",
+        "访问事件"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "MQ 异步落库怎么做？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "RocketMQ",
+        "异步"
+      ],
+      "shouldRefuse": false,
+      "caseType": "mixed_cn_en"
+    },
+    {
+      "spaceId": 1,
+      "question": "PV 为什么异步更新？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "PV",
+        "异步"
+      ],
+      "shouldRefuse": false,
+      "caseType": "keyword_short"
+    },
+    {
+      "spaceId": 1,
+      "question": "访问日志不直接同步写库的原因是什么？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "访问日志",
+        "异步"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "短链跳转主链路应该负责写访问日志吗？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "RocketMQ",
+        "异步"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "RocketMQ 如何降低访问统计对主链路的影响？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "RocketMQ",
+        "异步"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "访问统计放到消费者里更新有什么好处？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "消费者",
+        "PV"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "短链访问事件发送到 RocketMQ 后谁来更新 PV？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "消费者",
+        "PV"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "为什么访问统计要和跳转逻辑解耦？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "RocketMQ",
+        "异步"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "访问统计同步写库会带来什么风险？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "异步",
+        "访问日志"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "异步更新 PV 和访问日志依赖什么组件？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "RocketMQ",
+        "PV"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "短链访问量很高时统计数据怎么写入？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "RocketMQ",
+        "异步"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "RocketMQ 消息在短链统计链路中负责什么？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "RocketMQ",
+        "访问事件"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "访问统计不阻塞跳转流程应该怎么设计？",
+      "expectedChunkIds": [
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "RocketMQ",
+        "异步"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "短链跳转失败有哪些原因？",
+      "expectedChunkIds": [
+        "3"
+      ],
+      "expectedAnswerKeywords": [
+        "短码",
+        "禁用",
+        "过期"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "Sentinel 限流会影响短链跳转吗？",
+      "expectedChunkIds": [
+        "3"
+      ],
+      "expectedAnswerKeywords": [
+        "Sentinel",
+        "限流"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "短码不存在会导致什么问题？",
+      "expectedChunkIds": [
+        "3"
+      ],
+      "expectedAnswerKeywords": [
+        "短码",
+        "失败"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "短链被禁用后还能跳转吗？",
+      "expectedChunkIds": [
+        "3"
+      ],
+      "expectedAnswerKeywords": [
+        "禁用",
+        "失败"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "短链过期后访问会发生什么？",
+      "expectedChunkIds": [
+        "3"
+      ],
+      "expectedAnswerKeywords": [
+        "过期",
+        "失败"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "原始链接不可访问会导致短链失败吗？",
+      "expectedChunkIds": [
+        "3"
+      ],
+      "expectedAnswerKeywords": [
+        "原始链接",
+        "失败"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "系统触发限流时短链跳转会怎样？",
+      "expectedChunkIds": [
+        "3"
+      ],
+      "expectedAnswerKeywords": [
+        "限流",
+        "失败"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "短链跳转异常应该先排查哪些状态？",
+      "expectedChunkIds": [
+        "3"
+      ],
+      "expectedAnswerKeywords": [
+        "禁用",
+        "过期"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "短码、禁用、过期分别会影响什么链路？",
+      "expectedChunkIds": [
+        "3"
+      ],
+      "expectedAnswerKeywords": [
+        "短码",
+        "禁用",
+        "过期"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "为什么短链会无法重定向到原始链接？",
+      "expectedChunkIds": [
+        "3"
+      ],
+      "expectedAnswerKeywords": [
+        "短码",
+        "原始链接"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "跳转失败时需要检查 Sentinel 吗？",
+      "expectedChunkIds": [
+        "3"
+      ],
+      "expectedAnswerKeywords": [
+        "Sentinel",
+        "限流"
+      ],
+      "shouldRefuse": false,
+      "caseType": "normal"
+    },
+    {
+      "spaceId": 1,
+      "question": "短链状态异常可能有哪些表现？",
+      "expectedChunkIds": [
+        "3"
+      ],
+      "expectedAnswerKeywords": [
+        "禁用",
+        "过期"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "短码无效和原始链接不可访问都属于什么问题？",
+      "expectedChunkIds": [
+        "3"
+      ],
+      "expectedAnswerKeywords": [
+        "短码",
+        "原始链接"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "限流导致访问失败应该如何定位？",
+      "expectedChunkIds": [
+        "3"
+      ],
+      "expectedAnswerKeywords": [
+        "Sentinel",
+        "限流"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "短链不可用通常和哪些配置有关？",
+      "expectedChunkIds": [
+        "3"
+      ],
+      "expectedAnswerKeywords": [
+        "禁用",
+        "过期"
+      ],
+      "shouldRefuse": false,
+      "caseType": "semantic_rewrite"
+    },
+    {
+      "spaceId": 1,
+      "question": "短链系统如何同时处理缓存未命中和访问统计？",
+      "expectedChunkIds": [
+        "4",
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "MySQL",
+        "RocketMQ"
+      ],
+      "shouldRefuse": false,
+      "caseType": "multi_hop"
+    },
+    {
+      "spaceId": 1,
+      "question": "短链高并发跳转时需要关注哪些风险？",
+      "expectedChunkIds": [
+        "16",
+        "3"
+      ],
+      "expectedAnswerKeywords": [
+        "缓存",
+        "限流"
+      ],
+      "shouldRefuse": false,
+      "caseType": "multi_hop"
+    },
+    {
+      "spaceId": 1,
+      "question": "Redis 未命中和缓存击穿有什么不同处理？",
+      "expectedChunkIds": [
+        "4",
+        "16"
+      ],
+      "expectedAnswerKeywords": [
+        "MySQL",
+        "互斥锁"
+      ],
+      "shouldRefuse": false,
+      "caseType": "multi_hop"
+    },
+    {
+      "spaceId": 1,
+      "question": "跳转主链路如何既快速返回又记录访问数据？",
+      "expectedChunkIds": [
+        "4",
+        "5"
+      ],
+      "expectedAnswerKeywords": [
+        "Redis",
+        "RocketMQ"
+      ],
+      "shouldRefuse": false,
+      "caseType": "multi_hop"
+    },
+    {
+      "spaceId": 1,
+      "question": "短链跳转失败和缓存回源分别怎么排查？",
+      "expectedChunkIds": [
+        "3",
+        "4"
+      ],
+      "expectedAnswerKeywords": [
+        "短码",
+        "MySQL"
+      ],
+      "shouldRefuse": false,
+      "caseType": "multi_hop"
+    },
+    {
+      "spaceId": 1,
+      "question": "公司年假制度是什么？",
+      "expectedChunkIds": [],
+      "expectedAnswerKeywords": [],
+      "shouldRefuse": true,
+      "caseType": "no_answer"
+    },
+    {
+      "spaceId": 1,
+      "question": "员工报销流程是什么？",
+      "expectedChunkIds": [],
+      "expectedAnswerKeywords": [],
+      "shouldRefuse": true,
+      "caseType": "no_answer"
+    },
+    {
+      "spaceId": 1,
+      "question": "财务报销流程需要哪些审批人？",
+      "expectedChunkIds": [],
+      "expectedAnswerKeywords": [],
+      "shouldRefuse": true,
+      "caseType": "no_answer"
+    },
+    {
+      "spaceId": 1,
+      "question": "请介绍公司绩效考核等级规则。",
+      "expectedChunkIds": [],
+      "expectedAnswerKeywords": [],
+      "shouldRefuse": true,
+      "caseType": "no_answer"
+    },
+    {
+      "spaceId": 1,
+      "question": "公司加班餐补标准是多少？",
+      "expectedChunkIds": [],
+      "expectedAnswerKeywords": [],
+      "shouldRefuse": true,
+      "caseType": "no_answer"
+    },
+    {
+      "spaceId": 1,
+      "question": "员工入职需要提交哪些材料？",
+      "expectedChunkIds": [],
+      "expectedAnswerKeywords": [],
+      "shouldRefuse": true,
+      "caseType": "no_answer"
+    },
+    {
+      "spaceId": 1,
+      "question": "服务器采购审批流程是什么？",
+      "expectedChunkIds": [],
+      "expectedAnswerKeywords": [],
+      "shouldRefuse": true,
+      "caseType": "no_answer"
+    },
+    {
+      "spaceId": 1,
+      "question": "项目奖金怎么算？",
+      "expectedChunkIds": [],
+      "expectedAnswerKeywords": [],
+      "shouldRefuse": true,
+      "caseType": "no_answer"
+    },
+    {
+      "spaceId": 1,
+      "question": "公司团建预算报销规则是什么？",
+      "expectedChunkIds": [],
+      "expectedAnswerKeywords": [],
+      "shouldRefuse": true,
+      "caseType": "no_answer"
+    },
+    {
+      "spaceId": 1,
+      "question": "如何申请办公电脑维修？",
+      "expectedChunkIds": [],
+      "expectedAnswerKeywords": [],
+      "shouldRefuse": true,
+      "caseType": "no_answer"
+    }
+  ]
+}

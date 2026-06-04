@@ -54,6 +54,14 @@ public class KbDocumentChunk {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "page_no")
+    private Integer pageNo;
+
+    @Column(name = "chunk_type", length = 30)
+    private String chunkType;
+
+    @Column(name = "section_title", length = 255)
+    private String sectionTitle;
     public KbDocumentChunk() {
     }
 
@@ -136,4 +144,28 @@ public class KbDocumentChunk {
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
+    public Integer getPageNo() {
+        return pageNo;
+    }
+
+    public void setPageNo(Integer pageNo) {
+        this.pageNo = pageNo;
+    }
+
+    public String getChunkType() {
+        return chunkType;
+    }
+
+    public void setChunkType(String chunkType) {
+        this.chunkType = chunkType;
+    }
+
+    public String getSectionTitle() {
+        return sectionTitle;
+    }
+
+    public void setSectionTitle(String sectionTitle) {
+        this.sectionTitle = sectionTitle;
+    }
+
 }

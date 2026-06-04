@@ -1,5 +1,7 @@
 package com.cookie.askflowbackend.service.impl;
-
+import com.cookie.askflowbackend.client.AiPdfParseClient;
+import com.cookie.askflowbackend.dto.AiPdfParseChunk;
+import com.cookie.askflowbackend.dto.AiPdfParseResponse;
 import com.cookie.askflowbackend.dto.CreateKbDocumentRequest;
 import com.cookie.askflowbackend.dto.KbDocumentResponse;
 import com.cookie.askflowbackend.entity.KbDocument;
@@ -25,7 +27,7 @@ import java.util.Locale;
 import java.util.List;
 import com.cookie.askflowbackend.dto.VectorizeKbDocumentResponse;
 import com.cookie.askflowbackend.service.KbVectorService;
-
+import java.util.ArrayList;
 @Service
 public class KbDocumentServiceImpl implements KbDocumentService {
 
@@ -34,16 +36,19 @@ public class KbDocumentServiceImpl implements KbDocumentService {
     private final KbChunkService kbChunkService;
     private final KbDocumentChunkRepository kbDocumentChunkRepository;
     private final KbVectorService kbVectorService;
+    private final AiPdfParseClient aiPdfParseClient;
     public KbDocumentServiceImpl(KbDocumentRepository kbDocumentRepository,
                                  KbSpaceRepository kbSpaceRepository,
                                  KbChunkService kbChunkService,
                                  KbDocumentChunkRepository kbDocumentChunkRepository,
-                                 KbVectorService kbVectorService) {
+                                 KbVectorService kbVectorService,
+                                 AiPdfParseClient aiPdfParseClient) {
         this.kbDocumentRepository = kbDocumentRepository;
         this.kbSpaceRepository = kbSpaceRepository;
         this.kbChunkService = kbChunkService;
         this.kbDocumentChunkRepository = kbDocumentChunkRepository;
         this.kbVectorService = kbVectorService;
+        this.aiPdfParseClient = aiPdfParseClient;
     }
 
     @Transactional
@@ -118,6 +123,13 @@ public class KbDocumentServiceImpl implements KbDocumentService {
                 document.getUpdatedAt()
         );
     }
+    private boolean isPdfFile(MultipartFile file) {
+        String filename = file.getOriginalFilename();
+        String contentType = file.getContentType();
+
+        return (filename != null && filename.toLowerCase().endsWith(".pdf"))
+                || "application/pdf".equalsIgnoreCase(contentType);
+    }
     private String removeBom(String content) {
         if (content == null) {
             return null;
@@ -129,6 +141,7 @@ public class KbDocumentServiceImpl implements KbDocumentService {
 
         return content;
     }
+    @Transactional
     @Override
     public UploadKbDocumentResponse uploadAndParseDocument(Long spaceId, MultipartFile file, Integer chunkSize) {
         KbSpace space = kbSpaceRepository.findById(spaceId)
@@ -154,20 +167,13 @@ public class KbDocumentServiceImpl implements KbDocumentService {
         String safeFilename = Paths.get(originalFilename).getFileName().toString();
         String lowerFilename = safeFilename.toLowerCase(Locale.ROOT);
 
-        if (!lowerFilename.endsWith(".txt") && !lowerFilename.endsWith(".md")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "only .txt and .md files are supported");
-        }
+        boolean isTxt = lowerFilename.endsWith(".txt");
+        boolean isMarkdown = lowerFilename.endsWith(".md");
+        boolean isPdf = lowerFilename.endsWith(".pdf")
+                || "application/pdf".equalsIgnoreCase(file.getContentType());
 
-        String content;
-        try {
-            content = new String(file.getBytes(), StandardCharsets.UTF_8);
-            content = removeBom(content);
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "failed to read uploaded file");
-        }
-
-        if (content.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "document content cannot be blank");
+        if (!isTxt && !isMarkdown && !isPdf) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "only .txt, .md and .pdf files are supported");
         }
 
         String title = buildTitleFromFilename(safeFilename);
@@ -179,7 +185,15 @@ public class KbDocumentServiceImpl implements KbDocumentService {
         KbDocument document = new KbDocument();
         document.setSpaceId(spaceId);
         document.setTitle(title);
-        document.setDocumentType(lowerFilename.endsWith(".md") ? "markdown" : "txt");
+
+        if (isPdf) {
+            document.setDocumentType("pdf");
+        } else if (isMarkdown) {
+            document.setDocumentType("markdown");
+        } else {
+            document.setDocumentType("txt");
+        }
+
         document.setOriginalFilename(safeFilename);
         document.setStoragePath("uploaded://" + safeFilename);
         document.setParseStatus("PARSING");
@@ -188,14 +202,50 @@ public class KbDocumentServiceImpl implements KbDocumentService {
 
         KbDocument saved = kbDocumentRepository.save(document);
 
+        List<KbChunkResponse> chunks;
+
+        if (isPdf) {
+            AiPdfParseResponse parseResponse = aiPdfParseClient.parsePdf(file);
+
+            if (parseResponse == null
+                    || parseResponse.getChunks() == null
+                    || parseResponse.getChunks().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pdf parse result is empty");
+            }
+
+            List<KbDocumentChunk> pdfChunks = savePdfChunks(spaceId, saved, parseResponse.getChunks());
+
+            saved.setParseStatus("PARSED");
+            saved.setChunkCount(pdfChunks.size());
+            kbDocumentRepository.save(saved);
+
+            // PDF chunk 已经保存到 kb_document_chunk。
+            // 为避免 KbChunkResponse 构造器不匹配，这里先返回空列表。
+            // 后续通过 GET /api/kb/documents/{id}/chunks 查看 chunk。
+            chunks = List.of();
+
+        } else {
+            String content;
+            try {
+                content = new String(file.getBytes(), StandardCharsets.UTF_8);
+                content = removeBom(content);
+            } catch (IOException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "failed to read uploaded file");
+            }
+
+            if (content.isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "document content cannot be blank");
+            }
+
+            chunks = kbChunkService.parseDocument(
+                    saved.getId(),
+                    new ParseKbDocumentRequest(content, chunkSize)
+            );
+        }
+
         Integer currentCount = space.getDocumentCount() == null ? 0 : space.getDocumentCount();
         space.setDocumentCount(currentCount + 1);
         kbSpaceRepository.save(space);
-
-        List<KbChunkResponse> chunks = kbChunkService.parseDocument(
-                saved.getId(),
-                new ParseKbDocumentRequest(content, chunkSize)
-        );
 
         Integer indexedCount = 0;
         String vectorStatus = "SUCCESS";
@@ -221,7 +271,44 @@ public class KbDocumentServiceImpl implements KbDocumentService {
                 vectorStatus
         );
     }
+    private List<KbDocumentChunk> savePdfChunks(Long spaceId,
+                                                KbDocument document,
+                                                List<AiPdfParseChunk> parsedChunks) {
+        List<KbDocumentChunk> chunks = new ArrayList<>();
 
+        int index = 0;
+
+        for (AiPdfParseChunk parsedChunk : parsedChunks) {
+            if (parsedChunk == null) {
+                continue;
+            }
+
+            String content = parsedChunk.getContent();
+
+            if (content == null || content.isBlank()) {
+                continue;
+            }
+
+            KbDocumentChunk chunk = new KbDocumentChunk();
+            chunk.setSpaceId(spaceId);
+            chunk.setDocumentId(document.getId());
+            chunk.setChunkIndex(index++);
+            chunk.setPageNo(parsedChunk.getPageNo());
+            chunk.setChunkType(parsedChunk.getChunkType() == null ? "TEXT" : parsedChunk.getChunkType());
+            chunk.setSectionTitle(parsedChunk.getSectionTitle());
+            chunk.setContent(content);
+            chunk.setTokenCount(content.length());
+            chunk.setStatus(1);
+
+            chunks.add(kbDocumentChunkRepository.save(chunk));
+        }
+
+        if (chunks.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pdf parsed chunks are empty");
+        }
+
+        return chunks;
+    }
     private String buildTitleFromFilename(String filename) {
         int dotIndex = filename.lastIndexOf(".");
         if (dotIndex <= 0) {

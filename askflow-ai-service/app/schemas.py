@@ -1,12 +1,15 @@
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
-
+from typing import Optional
 class ContextChunk(BaseModel):
     chunk_id: str
     document_name: str
     content: str
-    score: float | None = None
+    score: Optional[float] = None
+    page_no: Optional[int] = None
+    chunk_type: Optional[str] = None
+    section_title: Optional[str] = None
 
 
 class AskRequest(BaseModel):
@@ -18,13 +21,17 @@ class Citation(BaseModel):
     document_name: str
     chunk_id: str
     content: str
-
+    page_no: Optional[int] = None
+    chunk_type: Optional[str] = None
+    section_title: Optional[str] = None
+    score: Optional[float] = None
 
 class AskResponse(BaseModel):
     answer: str
     citations: List[Citation]
     debug: Dict[str, Any] = {}
 
+from typing import Optional
 class VectorChunk(BaseModel):
     chunk_id: int
     space_id: int
@@ -33,6 +40,9 @@ class VectorChunk(BaseModel):
     chunk_index: int = 0
     content: str
     token_count: int = 0
+    page_no: Optional[int] = None
+    chunk_type: Optional[str] = None
+    section_title: Optional[str] = None
 
 
 class VectorUpsertRequest(BaseModel):
@@ -59,6 +69,9 @@ class VectorSearchHit(BaseModel):
     token_count: int
     content: str
     score: float
+    page_no: Optional[int] = None
+    chunk_type: Optional[str] = None
+    section_title: Optional[str] = None
 
 
 class VectorSearchResponse(BaseModel):

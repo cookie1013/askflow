@@ -87,7 +87,10 @@ public class KbChunkServiceImpl implements KbChunkService {
                 chunk.getTokenCount(),
                 chunk.getStatus(),
                 chunk.getCreatedAt(),
-                chunk.getUpdatedAt()
+                chunk.getUpdatedAt(),
+                chunk.getPageNo(),
+                chunk.getChunkType(),
+                chunk.getSectionTitle()
         );
     }
 
@@ -130,6 +133,7 @@ public class KbChunkServiceImpl implements KbChunkService {
             chunk.setChunkIndex(index);
             chunk.setContent(piece.trim());
             chunk.setTokenCount(estimateTokenCount(piece));
+            chunk.setChunkType("TEXT");
             chunk.setStatus(1);
 
             savedChunks.add(kbDocumentChunkRepository.save(chunk));

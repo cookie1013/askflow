@@ -67,11 +67,20 @@ public class HybridRetrievalService {
         Map<Long, String> documentTitleCache = new HashMap<>();
 
         // 1. 向量召回
+        boolean tableQuestion = isTableQuestion(question);
+
+        int safeTopK = topK <= 0 ? 3 : topK;
+        double safeMinScore = minScore < 0 ? 0.0 : minScore;
+
+// 表格类问题：扩大候选召回，降低初筛阈值，让 TABLE chunk 有机会进入候选集
+        int candidateTopK = tableQuestion ? 20 : safeTopK;
+        double candidateMinScore = tableQuestion ? 0.0 : safeMinScore;
+
         AiVectorSearchRequest vectorSearchRequest = new AiVectorSearchRequest(
                 spaceId,
                 question,
-                topK,
-                minScore
+                candidateTopK,
+                candidateMinScore
         );
 
         AiVectorSearchResponse vectorSearchResponse = aiVectorClient.search(vectorSearchRequest);
@@ -89,7 +98,11 @@ public class HybridRetrievalService {
                     hit.getChunkIndex(),
                     hit.getContent(),
                     hit.getScore(),
-                    "vector"
+                    "vector",
+                    hit.getPageNo(),
+                    hit.getChunkType(),
+                    hit.getSectionTitle()
+
             );
 
             merged.put(hit.getChunkId(), chunk);
@@ -124,7 +137,10 @@ public class HybridRetrievalService {
                         keywordChunk.getChunkIndex(),
                         keywordChunk.getContent(),
                         KEYWORD_BASE_SCORE,
-                        "keyword"
+                        "keyword",
+                        keywordChunk.getPageNo(),
+                        keywordChunk.getChunkType(),
+                        keywordChunk.getSectionTitle()
                 );
 
                 merged.put(chunkId, chunk);
@@ -132,12 +148,35 @@ public class HybridRetrievalService {
         }
 
         // 3. 排序 + topK 截断
+        // 3. 内容去重 + 表格问题加权 + 排序 + topK 截断
         return deduplicateByContent(merged.values()).stream()
+                .peek(chunk -> chunk.setScore(applyTableBoost(question, chunk)))
                 .sorted(Comparator.comparing(RagRetrievedChunk::getScore).reversed())
-                .limit(topK)
+                .limit(safeTopK)
                 .toList();
     }
 
+    private boolean isTableQuestion(String question) {
+        if (question == null) {
+            return false;
+        }
+
+        return question.contains("表格")
+                || question.contains("矩阵")
+                || question.contains("故障现象")
+                || question.contains("可能原因")
+                || question.contains("排查动作")
+                || question.contains("期望处理");
+    }
+    private double applyTableBoost(String question, RagRetrievedChunk chunk) {
+        double score = chunk.getScore() == null ? 0.0 : chunk.getScore();
+
+        if (isTableQuestion(question) && "TABLE".equalsIgnoreCase(chunk.getChunkType())) {
+            score += 0.25;
+        }
+
+        return score;
+    }
     private List<String> extractKeywords(String question) {
         if (question == null || question.isBlank()) {
             return List.of();

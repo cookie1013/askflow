@@ -13,13 +13,18 @@ public class KbChunkResponse {
     private Integer status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
+    private Integer pageNo;
+    private String chunkType;
+    private String sectionTitle;
     public KbChunkResponse() {
     }
 
     public KbChunkResponse(Long id, Long spaceId, Long documentId, Integer chunkIndex,
                            String content, Integer tokenCount, Integer status,
-                           LocalDateTime createdAt, LocalDateTime updatedAt) {
+                           LocalDateTime createdAt, LocalDateTime updatedAt,
+                           Integer pageNo,
+                           String chunkType,
+                           String sectionTitle) {
         this.id = id;
         this.spaceId = spaceId;
         this.documentId = documentId;
@@ -29,6 +34,12 @@ public class KbChunkResponse {
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.pageNo = pageNo;
+        this.chunkType = chunkType;
+        this.sectionTitle = sectionTitle;
+        this.pageNo = pageNo;
+        this.chunkType = chunkType;
+        this.sectionTitle = sectionTitle;
     }
 
     public Long getId() {
@@ -65,5 +76,17 @@ public class KbChunkResponse {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Integer getPageNo() {
+        return pageNo;
+    }
+
+    public String getChunkType() {
+        return chunkType;
+    }
+
+    public String getSectionTitle() {
+        return sectionTitle;
     }
 }

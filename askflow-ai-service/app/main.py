@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from app.schemas import AskRequest, AskResponse, Citation
 from app.llm_client import generate_llm_answer
-
+from fastapi import UploadFile, File
+from app.pdf_parser import parse_pdf_text
 from app.schemas import (
     VectorSearchRequest,
     VectorSearchResponse,
@@ -37,6 +38,9 @@ def rag_ask(request: AskRequest):
                 "document_name": chunk.document_name,
                 "content": chunk.content,
                 "score": chunk.score,
+                "page_no": getattr(chunk, "page_no", None),
+                "chunk_type": getattr(chunk, "chunk_type", None),
+                "section_title": getattr(chunk, "section_title", None),
             }
         )
 
@@ -50,6 +54,10 @@ def rag_ask(request: AskRequest):
             content=chunk.content,
             document_name=chunk.document_name,
             chunk_id=chunk.chunk_id,
+            page_no=getattr(chunk, "page_no", None),
+            chunk_type=getattr(chunk, "chunk_type", None),
+            section_title=getattr(chunk, "section_title", None),
+            score=getattr(chunk, "score", None),
         )
         for chunk in context_chunks
     ]
@@ -65,6 +73,9 @@ def rag_ask(request: AskRequest):
             "chunk_id": chunk.chunk_id,
             "document_name": chunk.document_name,
             "score": chunk.score,
+            "page_no": getattr(chunk, "page_no", None),
+            "chunk_type": getattr(chunk, "chunk_type", None),
+            "section_title": getattr(chunk, "section_title", None),
         }
         for chunk in context_chunks
     ]
@@ -108,3 +119,13 @@ def vector_search(request: VectorSearchRequest):
             "matched_count": len(hits),
         },
     )
+@app.post("/parse/pdf")
+async def parse_pdf(file: UploadFile = File(...)):
+    file_bytes = await file.read()
+    chunks = parse_pdf_text(file_bytes)
+
+    return {
+        "filename": file.filename,
+        "chunk_count": len(chunks),
+        "chunks": chunks
+    }

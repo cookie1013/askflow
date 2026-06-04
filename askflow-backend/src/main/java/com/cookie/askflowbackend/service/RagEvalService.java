@@ -97,6 +97,7 @@ public class RagEvalService {
                         hit.getDocumentTitle(),
                         hit.getContent(),
                         hit.getScore()
+
                 ))
                 .toList();
 

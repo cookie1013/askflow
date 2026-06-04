@@ -16,6 +16,7 @@ public class KbDocumentResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+
     public KbDocumentResponse() {
     }
 

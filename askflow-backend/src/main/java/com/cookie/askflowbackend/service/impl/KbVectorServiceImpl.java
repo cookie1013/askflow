@@ -55,7 +55,10 @@ public class KbVectorServiceImpl implements KbVectorService {
                         document.getTitle(),
                         chunk.getChunkIndex(),
                         chunk.getContent(),
-                        chunk.getTokenCount()
+                        chunk.getTokenCount(),
+                        chunk.getPageNo(),
+                        chunk.getChunkType(),
+                        chunk.getSectionTitle()
                 ))
                 .toList();
 

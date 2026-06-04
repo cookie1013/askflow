@@ -21,6 +21,15 @@ public class AiVectorSearchHit {
 
     @JsonProperty("token_count")
     private Integer tokenCount;
+    @JsonProperty("page_no")
+    private Integer pageNo;
+
+    @JsonProperty("chunk_type")
+    private String chunkType;
+
+    @JsonProperty("section_title")
+    private String sectionTitle;
+
 
     private String content;
 
@@ -57,4 +66,20 @@ public class AiVectorSearchHit {
     public Double getScore() {
         return score;
     }
+    public Integer getPageNo() {
+        return pageNo;
+    }
+
+
+    public String getChunkType() {
+        return chunkType;
+    }
+
+
+
+    public String getSectionTitle() {
+        return sectionTitle;
+    }
+
+
 }

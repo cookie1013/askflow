@@ -80,7 +80,10 @@ public class ChatController {
                         String.valueOf(chunk.getChunkId()),
                         chunk.getDocumentTitle(),
                         chunk.getContent(),
-                        chunk.getScore()
+                        chunk.getScore(),
+                        chunk.getPageNo(),
+                        chunk.getChunkType(),
+                        chunk.getSectionTitle()
                 ))
                 .toList();
 
