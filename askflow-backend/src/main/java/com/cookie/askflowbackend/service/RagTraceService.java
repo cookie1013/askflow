@@ -77,6 +77,7 @@ public class RagTraceService {
                     traceChunk.setRankNo(rank++);
                     traceChunk.setScore(hit.getScore());
                     traceChunk.setSelected(true);
+                    traceChunk.setSource("vector");
                     traceChunk.setContentSnapshot(hit.getContent());
                     traceChunk.setCreatedAt(LocalDateTime.now());
                     ragTraceChunkRepository.save(traceChunk);
@@ -149,6 +150,7 @@ public class RagTraceService {
                     traceChunk.setRankNo(rank++);
                     traceChunk.setScore(chunk.getScore());
                     traceChunk.setSelected(true);
+                    traceChunk.setSource(chunk.getSource());
                     traceChunk.setContentSnapshot(chunk.getContent());
                     traceChunk.setCreatedAt(LocalDateTime.now());
                     ragTraceChunkRepository.save(traceChunk);

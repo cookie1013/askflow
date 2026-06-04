@@ -32,6 +32,7 @@ public class RagTraceChunk {
     private String contentSnapshot;
 
     private LocalDateTime createdAt;
+    private String source;
 
     public Long getId() {
         return id;
@@ -115,5 +116,12 @@ public class RagTraceChunk {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 }
