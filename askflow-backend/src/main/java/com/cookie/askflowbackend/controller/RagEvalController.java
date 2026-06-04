@@ -32,8 +32,10 @@ public class RagEvalController {
     }
 
     @PostMapping("/cases/{id}/run")
-    public ApiResponse<RagEvalResult> runCase(@PathVariable Long id) {
-        return ApiResponse.success(ragEvalService.runCase(id));
+    public ApiResponse<RagEvalResult> runCase(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "hybrid") String retrievalMode) {
+        return ApiResponse.success(ragEvalService.runCase(id, retrievalMode));
     }
 
     @GetMapping("/cases/{id}/results")
@@ -42,11 +44,15 @@ public class RagEvalController {
     }
 
     @GetMapping("/summary")
-    public ApiResponse<RagEvalSummaryResponse> summary(@RequestParam Long spaceId) {
-        return ApiResponse.success(ragEvalService.summary(spaceId));
+    public ApiResponse<RagEvalSummaryResponse> summary(
+            @RequestParam Long spaceId,
+            @RequestParam(defaultValue = "hybrid") String retrievalMode) {
+        return ApiResponse.success(ragEvalService.summary(spaceId, retrievalMode));
     }
     @PostMapping("/run-all")
-    public ApiResponse<List<RagEvalResult>> runAll(@RequestParam Long spaceId) {
-        return ApiResponse.success(ragEvalService.runAll(spaceId));
+    public ApiResponse<List<RagEvalResult>> runAll(
+            @RequestParam Long spaceId,
+            @RequestParam(defaultValue = "hybrid") String retrievalMode) {
+        return ApiResponse.success(ragEvalService.runAll(spaceId, retrievalMode));
     }
 }

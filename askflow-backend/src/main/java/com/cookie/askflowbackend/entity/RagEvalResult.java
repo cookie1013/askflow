@@ -60,6 +60,9 @@ public class RagEvalResult {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "retrieval_mode", nullable = false, length = 30)
+    private String retrievalMode = "hybrid";
+
     public Long getId() {
         return id;
     }
@@ -190,5 +193,13 @@ public class RagEvalResult {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getRetrievalMode() {
+        return retrievalMode;
+    }
+
+    public void setRetrievalMode(String retrievalMode) {
+        this.retrievalMode = retrievalMode;
     }
 }

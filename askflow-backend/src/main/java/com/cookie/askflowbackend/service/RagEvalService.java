@@ -29,6 +29,7 @@ public class RagEvalService {
     private final AiClient aiClient;
     private final ObjectMapper objectMapper;
     private final HybridRetrievalService hybridRetrievalService;
+
     public RagEvalService(RagEvalCaseRepository ragEvalCaseRepository,
                           RagEvalResultRepository ragEvalResultRepository,
                           AiVectorClient aiVectorClient,
@@ -63,8 +64,11 @@ public class RagEvalService {
     public List<RagEvalCase> listCases(Long spaceId) {
         return ragEvalCaseRepository.findBySpaceIdAndStatusOrderByCreatedAtDesc(spaceId, 1);
     }
-
     public RagEvalResult runCase(Long caseId) {
+        return runCase(caseId, "hybrid");
+    }
+    public RagEvalResult runCase(Long caseId, String retrievalMode) {
+        String mode = normalizeRetrievalMode(retrievalMode);
         RagEvalCase evalCase = ragEvalCaseRepository.findById(caseId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "eval case not found"));
 
@@ -76,7 +80,8 @@ public class RagEvalService {
 
         long retrievalStart = System.currentTimeMillis();
 
-        List<RagRetrievedChunk> hits = hybridRetrievalService.retrieve(
+        List<RagRetrievedChunk> hits = retrieveForEval(
+                mode,
                 evalCase.getSpaceId(),
                 evalCase.getQuestion(),
                 DEFAULT_TOP_K,
@@ -151,20 +156,33 @@ public class RagEvalService {
         result.setGenerationTimeMs(generationTimeMs);
         result.setTotalTimeMs(totalTimeMs);
         result.setCreatedAt(LocalDateTime.now());
+        result.setRetrievalMode(mode);
 
         return ragEvalResultRepository.save(result);
     }
     public List<RagEvalResult> runAll(Long spaceId) {
+        return runAll(spaceId, "hybrid");
+    }
+
+    public List<RagEvalResult> runAll(Long spaceId, String retrievalMode) {
+        String mode = normalizeRetrievalMode(retrievalMode);
+
         List<RagEvalCase> cases = ragEvalCaseRepository.findBySpaceIdAndStatusOrderByCreatedAtDesc(spaceId, 1);
 
         List<RagEvalResult> results = new ArrayList<>();
         for (RagEvalCase evalCase : cases) {
-            results.add(runCase(evalCase.getId()));
+            results.add(runCase(evalCase.getId(), mode));
         }
 
         return results;
     }
     public RagEvalSummaryResponse summary(Long spaceId) {
+        return summary(spaceId, "hybrid");
+    }
+
+    public RagEvalSummaryResponse summary(Long spaceId, String retrievalMode) {
+        String mode = normalizeRetrievalMode(retrievalMode);
+
         List<RagEvalCase> cases = ragEvalCaseRepository.findBySpaceIdAndStatusOrderByCreatedAtDesc(spaceId, 1);
 
         List<RagEvalResult> latestResults = new ArrayList<>();
@@ -173,7 +191,7 @@ public class RagEvalService {
         for (RagEvalCase evalCase : cases) {
             caseMap.put(evalCase.getId(), evalCase);
 
-            ragEvalResultRepository.findFirstByCaseIdOrderByCreatedAtDesc(evalCase.getId())
+            ragEvalResultRepository.findFirstByCaseIdAndRetrievalModeOrderByCreatedAtDesc(evalCase.getId(), mode)
                     .ifPresent(latestResults::add);
         }
 
@@ -211,7 +229,54 @@ public class RagEvalService {
     public List<RagEvalResult> listResultsByCase(Long caseId) {
         return ragEvalResultRepository.findByCaseIdOrderByCreatedAtDesc(caseId);
     }
+    private List<RagRetrievedChunk> retrieveForEval(String mode,
+                                                    Long spaceId,
+                                                    String question,
+                                                    int topK,
+                                                    double minScore) {
+        if ("vector".equals(mode)) {
+            AiVectorSearchRequest searchRequest = new AiVectorSearchRequest(
+                    spaceId,
+                    question,
+                    topK,
+                    minScore
+            );
 
+            AiVectorSearchResponse searchResponse = aiVectorClient.search(searchRequest);
+
+            List<AiVectorSearchHit> vectorHits =
+                    searchResponse == null || searchResponse.getHits() == null
+                            ? List.of()
+                            : searchResponse.getHits();
+
+            return vectorHits.stream()
+                    .map(hit -> new RagRetrievedChunk(
+                            hit.getChunkId(),
+                            hit.getDocumentId(),
+                            hit.getDocumentTitle(),
+                            hit.getChunkIndex(),
+                            hit.getContent(),
+                            hit.getScore(),
+                            "vector"
+                    ))
+                    .toList();
+        }
+
+        return hybridRetrievalService.retrieve(
+                spaceId,
+                question,
+                topK,
+                minScore
+        );
+    }
+
+    private String normalizeRetrievalMode(String retrievalMode) {
+        if ("vector".equalsIgnoreCase(retrievalMode)) {
+            return "vector";
+        }
+
+        return "hybrid";
+    }
     private boolean calculatePassed(boolean shouldRefuse,
                                     boolean refused,
                                     Boolean recallHit,

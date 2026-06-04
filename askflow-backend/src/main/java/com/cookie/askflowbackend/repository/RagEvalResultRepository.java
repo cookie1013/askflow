@@ -13,4 +13,5 @@ public interface RagEvalResultRepository extends JpaRepository<RagEvalResult, Lo
     List<RagEvalResult> findByCaseIdOrderByCreatedAtDesc(Long caseId);
 
     Optional<RagEvalResult> findFirstByCaseIdOrderByCreatedAtDesc(Long caseId);
+    Optional<RagEvalResult> findFirstByCaseIdAndRetrievalModeOrderByCreatedAtDesc(Long caseId, String retrievalMode);
 }

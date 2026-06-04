@@ -18,7 +18,7 @@ import java.util.*;
 public class HybridRetrievalService {
 
     private static final double KEYWORD_BASE_SCORE = 0.45;
-    private static final double HYBRID_BONUS = 0.10;
+    private static final double HYBRID_BONUS = 0.05;
 
     private static final List<String> DOMAIN_KEYWORDS = List.of(
             "Redis",
