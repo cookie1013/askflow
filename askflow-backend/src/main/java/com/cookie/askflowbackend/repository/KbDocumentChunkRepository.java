@@ -19,6 +19,15 @@ public interface KbDocumentChunkRepository extends JpaRepository<KbDocumentChunk
 
     void deleteByDocumentId(Long documentId);
 
+    @Modifying
+    @Query("""
+            UPDATE KbDocumentChunk c
+            SET c.status = 0
+            WHERE c.spaceId = :spaceId
+              AND c.status = 1
+            """)
+    int softDeleteBySpaceId(@Param("spaceId") Long spaceId);
+
     @Query("""
             SELECT c
             FROM KbDocumentChunk c
@@ -30,13 +39,4 @@ public interface KbDocumentChunkRepository extends JpaRepository<KbDocumentChunk
     List<KbDocumentChunk> searchByKeyword(@Param("spaceId") Long spaceId,
                                           @Param("keyword") String keyword,
                                           Pageable pageable);
-
-    @Modifying
-    @Query("""
-            UPDATE KbDocumentChunk c
-            SET c.status = 0
-            WHERE c.spaceId = :spaceId
-              AND c.status = 1
-            """)
-    int softDeleteBySpaceId(@Param("spaceId") Long spaceId);
 }

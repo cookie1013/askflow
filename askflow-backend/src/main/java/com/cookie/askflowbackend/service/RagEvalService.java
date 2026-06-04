@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
+import com.cookie.askflowbackend.dto.RagRetrievedChunk;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -27,17 +27,19 @@ public class RagEvalService {
     private final AiVectorClient aiVectorClient;
     private final AiClient aiClient;
     private final ObjectMapper objectMapper;
-
+    private final HybridRetrievalService hybridRetrievalService;
     public RagEvalService(RagEvalCaseRepository ragEvalCaseRepository,
                           RagEvalResultRepository ragEvalResultRepository,
                           AiVectorClient aiVectorClient,
                           AiClient aiClient,
-                          ObjectMapper objectMapper) {
+                          ObjectMapper objectMapper,
+                          HybridRetrievalService hybridRetrievalService) {
         this.ragEvalCaseRepository = ragEvalCaseRepository;
         this.ragEvalResultRepository = ragEvalResultRepository;
         this.aiVectorClient = aiVectorClient;
         this.aiClient = aiClient;
         this.objectMapper = objectMapper;
+        this.hybridRetrievalService = hybridRetrievalService;
     }
 
     public RagEvalCase createCase(CreateRagEvalCaseRequest request) {
@@ -71,20 +73,16 @@ public class RagEvalService {
 
         long totalStart = System.currentTimeMillis();
 
-        AiVectorSearchRequest searchRequest = new AiVectorSearchRequest(
+        long retrievalStart = System.currentTimeMillis();
+
+        List<RagRetrievedChunk> hits = hybridRetrievalService.retrieve(
                 evalCase.getSpaceId(),
                 evalCase.getQuestion(),
                 DEFAULT_TOP_K,
                 DEFAULT_MIN_SCORE
         );
 
-        long retrievalStart = System.currentTimeMillis();
-        AiVectorSearchResponse searchResponse = aiVectorClient.search(searchRequest);
         long retrievalTimeMs = System.currentTimeMillis() - retrievalStart;
-
-        List<AiVectorSearchHit> hits = searchResponse == null || searchResponse.getHits() == null
-                ? List.of()
-                : searchResponse.getHits();
 
         List<AiContextChunk> contextChunks = hits.stream()
                 .map(hit -> new AiContextChunk(
@@ -228,7 +226,7 @@ public class RagEvalService {
      * 不要使用 answer.contains("知识库中没有") 这种宽泛规则，
      * 因为正常回答里也可能出现“知识库中没有更多具体步骤”这类表达。
      */
-    private boolean isRefused(AiAskResponse response, List<AiVectorSearchHit> hits) {
+    private boolean isRefused(AiAskResponse response, List<RagRetrievedChunk> hits){
         if (hits == null || hits.isEmpty()) {
             return true;
         }
@@ -309,13 +307,7 @@ public class RagEvalService {
         return chunkIds;
     }
 
-    private Object extractRetrievalScores(AiAskResponse response, List<AiVectorSearchHit> hits) {
-        if (response != null
-                && response.getDebug() != null
-                && response.getDebug().get("retrieval_scores") != null) {
-            return response.getDebug().get("retrieval_scores");
-        }
-
+    private Object extractRetrievalScores(AiAskResponse response, List<RagRetrievedChunk> hits) {
         if (hits == null) {
             return List.of();
         }
@@ -324,7 +316,8 @@ public class RagEvalService {
                 .map(hit -> Map.of(
                         "chunk_id", String.valueOf(hit.getChunkId()),
                         "document_name", hit.getDocumentTitle(),
-                        "score", hit.getScore()
+                        "score", hit.getScore(),
+                        "source", hit.getSource()
                 ))
                 .toList();
     }

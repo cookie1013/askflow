@@ -9,11 +9,14 @@ import com.cookie.askflowbackend.dto.AiVectorSearchHit;
 import com.cookie.askflowbackend.dto.AiVectorSearchRequest;
 import com.cookie.askflowbackend.dto.AiVectorSearchResponse;
 import com.cookie.askflowbackend.dto.ChatAskRequest;
+import com.cookie.askflowbackend.service.HybridRetrievalService;
 import com.cookie.askflowbackend.service.QaSessionService;
 import com.cookie.askflowbackend.service.RagTraceService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-
+import com.cookie.askflowbackend.dto.RagRetrievedChunk;
+import com.cookie.askflowbackend.service.HybridRetrievalService;
+import java.util.stream.Collectors;
 import java.util.List;
 
 @RestController
@@ -22,7 +25,7 @@ public class ChatController {
 
     private static final int DEFAULT_TOP_K = 3;
     private static final double DEFAULT_MIN_SCORE = 0.35;
-
+    private final HybridRetrievalService hybridRetrievalService;
     private final AiClient aiClient;
     private final AiVectorClient aiVectorClient;
     private final QaSessionService qaSessionService;
@@ -31,11 +34,13 @@ public class ChatController {
     public ChatController(AiClient aiClient,
                           AiVectorClient aiVectorClient,
                           QaSessionService qaSessionService,
-                          RagTraceService ragTraceService) {
+                          RagTraceService ragTraceService,
+                          HybridRetrievalService hybridRetrievalService) {
         this.aiClient = aiClient;
         this.aiVectorClient = aiVectorClient;
         this.qaSessionService = qaSessionService;
         this.ragTraceService = ragTraceService;
+        this.hybridRetrievalService = hybridRetrievalService;
     }
 
     @PostMapping("/ask")
@@ -57,28 +62,29 @@ public class ChatController {
 
         long retrievalStart = System.currentTimeMillis();
 
-        AiVectorSearchResponse vectorSearchResponse = aiVectorClient.search(vectorSearchRequest);
+        List<RagRetrievedChunk> retrievedChunks = hybridRetrievalService.retrieve(
+                request.getSpaceId(),
+                request.getQuestion(),
+                DEFAULT_TOP_K,
+                DEFAULT_MIN_SCORE
+        );
 
         long retrievalTimeMs = System.currentTimeMillis() - retrievalStart;
 
-        List<AiVectorSearchHit> hits = vectorSearchResponse == null || vectorSearchResponse.getHits() == null
-                ? List.of()
-                : vectorSearchResponse.getHits();
-
-        System.out.println("Vector RAG search question=" + request.getQuestion()
-                + ", hit size=" + hits.size()
+        System.out.println("Hybrid RAG search question=" + request.getQuestion()
+                + ", hit size=" + retrievedChunks.size()
                 + ", retrievalTimeMs=" + retrievalTimeMs);
 
-        List<AiContextChunk> contextChunks = hits.stream()
-                .map(hit -> new AiContextChunk(
-                        String.valueOf(hit.getChunkId()),
-                        hit.getDocumentTitle(),
-                        hit.getContent(),
-                        hit.getScore()
+        List<AiContextChunk> contextChunks = retrievedChunks.stream()
+                .map(chunk -> new AiContextChunk(
+                        String.valueOf(chunk.getChunkId()),
+                        chunk.getDocumentTitle(),
+                        chunk.getContent(),
+                        chunk.getScore()
                 ))
                 .toList();
 
-        System.out.println("Vector RAG context chunk size=" + contextChunks.size());
+        System.out.println("Hybrid RAG context chunk size=" + contextChunks.size());
 
         long generationStart = System.currentTimeMillis();
 
@@ -92,12 +98,12 @@ public class ChatController {
 
         long totalTimeMs = System.currentTimeMillis() - totalStart;
 
-        ragTraceService.saveSuccessTrace(
+        ragTraceService.saveSuccessTraceFromRetrievedChunks(
                 request.getSpaceId(),
                 sessionId,
                 request.getQuestion(),
                 null,
-                hits,
+                retrievedChunks,
                 response,
                 retrievalTimeMs,
                 generationTimeMs,
