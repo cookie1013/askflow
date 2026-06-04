@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import com.cookie.askflowbackend.dto.RagRetrievedChunk;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.*;
 
 @Service
@@ -167,7 +168,11 @@ public class RagEvalService {
         List<RagEvalCase> cases = ragEvalCaseRepository.findBySpaceIdAndStatusOrderByCreatedAtDesc(spaceId, 1);
 
         List<RagEvalResult> latestResults = new ArrayList<>();
+        Map<Long, RagEvalCase> caseMap = new HashMap<>();
+
         for (RagEvalCase evalCase : cases) {
+            caseMap.put(evalCase.getId(), evalCase);
+
             ragEvalResultRepository.findFirstByCaseIdOrderByCreatedAtDesc(evalCase.getId())
                     .ifPresent(latestResults::add);
         }
@@ -180,6 +185,8 @@ public class RagEvalService {
 
         double passRate = evaluated == 0 ? 0.0 : round(passed * 1.0 / evaluated);
 
+        MetricAccumulator metrics = calculateMetrics(latestResults, caseMap);
+
         double avgTotalTimeMs = latestResults.stream()
                 .filter(result -> result.getTotalTimeMs() != null)
                 .mapToLong(RagEvalResult::getTotalTimeMs)
@@ -191,6 +198,12 @@ public class RagEvalService {
                 evaluated,
                 passed,
                 passRate,
+                metrics.recallAtK,
+                metrics.mrr,
+                metrics.citationAccuracy,
+                metrics.refusalAccuracy,
+                metrics.misRecallRate,
+                metrics.answerKeywordAccuracy,
                 Math.round(avgTotalTimeMs * 100.0) / 100.0
         );
     }
@@ -349,5 +362,129 @@ public class RagEvalService {
 
     private double round(double value) {
         return Math.round(value * 10000.0) / 10000.0;
+    }
+    private MetricAccumulator calculateMetrics(List<RagEvalResult> results,
+                                               Map<Long, RagEvalCase> caseMap) {
+        long recallCaseCount = 0;
+        long recallHitCount = 0;
+
+        long citationCaseCount = 0;
+        long citationHitCount = 0;
+
+        long refusalCaseCount = 0;
+        long refusalCorrectCount = 0;
+        long misRecallCount = 0;
+
+        long keywordCaseCount = 0;
+        long keywordHitCount = 0;
+
+        double reciprocalRankSum = 0.0;
+        long mrrCaseCount = 0;
+
+        for (RagEvalResult result : results) {
+            RagEvalCase evalCase = caseMap.get(result.getCaseId());
+            if (evalCase == null) {
+                continue;
+            }
+
+            List<String> expectedChunkIds = readStringList(evalCase.getExpectedChunkIdsJson());
+            List<String> expectedKeywords = readStringList(evalCase.getExpectedAnswerKeywordsJson());
+            List<String> hitChunkIds = readStringList(result.getHitChunkIdsJson());
+            List<String> citationChunkIds = readStringList(result.getCitationChunkIdsJson());
+
+            boolean shouldRefuse = Boolean.TRUE.equals(evalCase.getShouldRefuse());
+
+            if (!expectedChunkIds.isEmpty()) {
+                recallCaseCount++;
+
+                if (hasIntersection(expectedChunkIds, hitChunkIds)) {
+                    recallHitCount++;
+                }
+
+                citationCaseCount++;
+                if (hasIntersection(expectedChunkIds, citationChunkIds)) {
+                    citationHitCount++;
+                }
+
+                mrrCaseCount++;
+                reciprocalRankSum += reciprocalRank(expectedChunkIds, hitChunkIds);
+            }
+
+            if (shouldRefuse) {
+                refusalCaseCount++;
+
+                if (Boolean.TRUE.equals(result.getRefusalCorrect())) {
+                    refusalCorrectCount++;
+                }
+
+                if (!hitChunkIds.isEmpty()) {
+                    misRecallCount++;
+                }
+            }
+
+            if (!expectedKeywords.isEmpty()) {
+                keywordCaseCount++;
+
+                if (Boolean.TRUE.equals(result.getAnswerKeywordHit())) {
+                    keywordHitCount++;
+                }
+            }
+        }
+
+        double recallAtK = recallCaseCount == 0 ? 0.0 : round(recallHitCount * 1.0 / recallCaseCount);
+        double mrr = mrrCaseCount == 0 ? 0.0 : round(reciprocalRankSum / mrrCaseCount);
+        double citationAccuracy = citationCaseCount == 0 ? 0.0 : round(citationHitCount * 1.0 / citationCaseCount);
+        double refusalAccuracy = refusalCaseCount == 0 ? 0.0 : round(refusalCorrectCount * 1.0 / refusalCaseCount);
+        double misRecallRate = refusalCaseCount == 0 ? 0.0 : round(misRecallCount * 1.0 / refusalCaseCount);
+        double answerKeywordAccuracy = keywordCaseCount == 0 ? 0.0 : round(keywordHitCount * 1.0 / keywordCaseCount);
+
+        return new MetricAccumulator(
+                recallAtK,
+                mrr,
+                citationAccuracy,
+                refusalAccuracy,
+                misRecallRate,
+                answerKeywordAccuracy
+        );
+    }
+
+    private double reciprocalRank(List<String> expectedChunkIds, List<String> hitChunkIds) {
+        if (expectedChunkIds == null || expectedChunkIds.isEmpty()
+                || hitChunkIds == null || hitChunkIds.isEmpty()) {
+            return 0.0;
+        }
+
+        Set<String> expectedSet = new HashSet<>(expectedChunkIds);
+
+        for (int i = 0; i < hitChunkIds.size(); i++) {
+            if (expectedSet.contains(hitChunkIds.get(i))) {
+                return 1.0 / (i + 1);
+            }
+        }
+
+        return 0.0;
+    }
+
+    private static class MetricAccumulator {
+        private final double recallAtK;
+        private final double mrr;
+        private final double citationAccuracy;
+        private final double refusalAccuracy;
+        private final double misRecallRate;
+        private final double answerKeywordAccuracy;
+
+        private MetricAccumulator(double recallAtK,
+                                  double mrr,
+                                  double citationAccuracy,
+                                  double refusalAccuracy,
+                                  double misRecallRate,
+                                  double answerKeywordAccuracy) {
+            this.recallAtK = recallAtK;
+            this.mrr = mrr;
+            this.citationAccuracy = citationAccuracy;
+            this.refusalAccuracy = refusalAccuracy;
+            this.misRecallRate = misRecallRate;
+            this.answerKeywordAccuracy = answerKeywordAccuracy;
+        }
     }
 }
