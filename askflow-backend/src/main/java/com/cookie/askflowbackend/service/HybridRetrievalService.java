@@ -132,7 +132,7 @@ public class HybridRetrievalService {
         }
 
         // 3. 排序 + topK 截断
-        return merged.values().stream()
+        return deduplicateByContent(merged.values()).stream()
                 .sorted(Comparator.comparing(RagRetrievedChunk::getScore).reversed())
                 .limit(topK)
                 .toList();
@@ -157,7 +157,40 @@ public class HybridRetrievalService {
                 .limit(5)
                 .toList();
     }
+    private List<RagRetrievedChunk> deduplicateByContent(Collection<RagRetrievedChunk> chunks) {
+        Map<String, RagRetrievedChunk> contentMap = new HashMap<>();
 
+        for (RagRetrievedChunk chunk : chunks) {
+            String key = normalizeContent(chunk.getContent());
+
+            if (key == null || key.isBlank()) {
+                key = "chunk:" + chunk.getChunkId();
+            }
+
+            RagRetrievedChunk existing = contentMap.get(key);
+
+            if (existing == null || safeScore(chunk) > safeScore(existing)) {
+                contentMap.put(key, chunk);
+            }
+        }
+
+        return new ArrayList<>(contentMap.values());
+    }
+
+    private String normalizeContent(String content) {
+        if (content == null) {
+            return "";
+        }
+
+        return content
+                .replaceAll("\\s+", "")
+                .replaceAll("[\\p{Punct}，。！？；：、“”‘’（）【】《》]", "")
+                .trim();
+    }
+
+    private double safeScore(RagRetrievedChunk chunk) {
+        return chunk.getScore() == null ? 0.0 : chunk.getScore();
+    }
     private String getDocumentTitle(Long documentId, Map<Long, String> documentTitleCache) {
         if (documentId == null) {
             return null;
