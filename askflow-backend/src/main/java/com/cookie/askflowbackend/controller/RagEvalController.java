@@ -6,6 +6,7 @@ import com.cookie.askflowbackend.dto.RagEvalSummaryResponse;
 import com.cookie.askflowbackend.entity.RagEvalCase;
 import com.cookie.askflowbackend.entity.RagEvalResult;
 import com.cookie.askflowbackend.service.RagEvalService;
+import com.cookie.askflowbackend.dto.BatchCreateRagEvalCaseRequest;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,5 +55,9 @@ public class RagEvalController {
             @RequestParam Long spaceId,
             @RequestParam(defaultValue = "hybrid") String retrievalMode) {
         return ApiResponse.success(ragEvalService.runAll(spaceId, retrievalMode));
+    }
+    @PostMapping("/cases/batch")
+    public ApiResponse<List<RagEvalCase>> createCases(@Valid @RequestBody BatchCreateRagEvalCaseRequest request) {
+        return ApiResponse.success(ragEvalService.createCases(request));
     }
 }

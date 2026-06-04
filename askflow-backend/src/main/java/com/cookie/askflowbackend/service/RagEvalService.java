@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import com.cookie.askflowbackend.dto.RagRetrievedChunk;
+import com.cookie.askflowbackend.dto.BatchCreateRagEvalCaseRequest;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.*;
@@ -175,6 +176,15 @@ public class RagEvalService {
         }
 
         return results;
+    }
+    public List<RagEvalCase> createCases(BatchCreateRagEvalCaseRequest request) {
+        if (request == null || request.getCases() == null || request.getCases().isEmpty()) {
+            return List.of();
+        }
+
+        return request.getCases().stream()
+                .map(this::createCase)
+                .toList();
     }
     public RagEvalSummaryResponse summary(Long spaceId) {
         return summary(spaceId, "hybrid");
