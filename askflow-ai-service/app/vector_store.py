@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Any
 
@@ -7,10 +8,21 @@ from sentence_transformers import SentenceTransformer
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 CHROMA_DIR = BASE_DIR / "data" / "chroma"
-COLLECTION_NAME = "askflow_chunks"
+EMBEDDING_PROFILE = os.getenv("ASKFLOW_EMBEDDING_PROFILE", "base").lower()
 
-# 支持中文的轻量多语言 embedding 模型
-MODEL_NAME = "paraphrase-multilingual-MiniLM-L12-v2"
+BASE_MODEL_NAME = "paraphrase-multilingual-MiniLM-L12-v2"
+FT_MODEL_PATH = BASE_DIR / "models" / "askflow-embedding-ft"
+
+if EMBEDDING_PROFILE == "ft":
+    MODEL_NAME = str(FT_MODEL_PATH)
+    COLLECTION_NAME = "askflow_chunks_ft"
+else:
+    MODEL_NAME = BASE_MODEL_NAME
+    COLLECTION_NAME = "askflow_chunks"
+
+print(f"[AskFlow] Embedding profile = {EMBEDDING_PROFILE}")
+print(f"[AskFlow] Embedding model = {MODEL_NAME}")
+print(f"[AskFlow] Chroma collection = {COLLECTION_NAME}")
 
 _model = SentenceTransformer(MODEL_NAME)
 _client = chromadb.PersistentClient(path=str(CHROMA_DIR))
