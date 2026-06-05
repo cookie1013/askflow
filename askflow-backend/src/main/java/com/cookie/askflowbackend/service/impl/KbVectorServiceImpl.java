@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-
+import com.cookie.askflowbackend.dto.AiVectorDeleteDocumentResponse;
 @Service
 public class KbVectorServiceImpl implements KbVectorService {
 
@@ -77,4 +77,9 @@ public class KbVectorServiceImpl implements KbVectorService {
                 indexedCount
         );
     }
+    @Override
+    public AiVectorDeleteDocumentResponse deleteVectorsByDocumentId(Long documentId) {
+        return aiVectorClient.deleteByDocumentId(documentId);
+    }
+
 }

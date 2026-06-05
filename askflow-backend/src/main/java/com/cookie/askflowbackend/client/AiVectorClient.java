@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import com.cookie.askflowbackend.dto.AiVectorSearchRequest;
 import com.cookie.askflowbackend.dto.AiVectorSearchResponse;
-
+import com.cookie.askflowbackend.dto.AiVectorDeleteDocumentRequest;
+import com.cookie.askflowbackend.dto.AiVectorDeleteDocumentResponse;
+import org.springframework.http.*;
 @Component
 public class AiVectorClient {
 
@@ -78,6 +80,33 @@ public class AiVectorClient {
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
+        }
+    }
+    public AiVectorDeleteDocumentResponse deleteByDocumentId(Long documentId) {
+        try {
+            AiVectorDeleteDocumentRequest request = new AiVectorDeleteDocumentRequest(documentId);
+            String jsonBody = objectMapper.writeValueAsString(request);
+
+            System.out.println("Vector delete request body = " + jsonBody);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAccept(java.util.List.of(MediaType.APPLICATION_JSON));
+
+            HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
+
+            ResponseEntity<AiVectorDeleteDocumentResponse> response = restTemplate.exchange(
+                    aiServiceBaseUrl + "/vector/delete-by-document",
+                    HttpMethod.POST,
+                    entity,
+                    AiVectorDeleteDocumentResponse.class
+            );
+
+            return response.getBody();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("failed to delete vectors by documentId: " + documentId, e);
         }
     }
 }

@@ -77,3 +77,11 @@ class VectorSearchHit(BaseModel):
 class VectorSearchResponse(BaseModel):
     hits: list[VectorSearchHit]
     debug: dict
+
+class VectorDeleteByDocumentRequest(BaseModel):
+    document_id: int
+
+
+class VectorDeleteByDocumentResponse(BaseModel):
+    document_id: int
+    deleted_count: int

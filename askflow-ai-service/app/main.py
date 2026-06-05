@@ -4,13 +4,18 @@ from app.llm_client import generate_llm_answer
 from fastapi import UploadFile, File
 from app.pdf_parser import parse_pdf_text
 from app.schemas import (
-    VectorSearchRequest,
-    VectorSearchResponse,
+    AskRequest,
+    AskResponse,
+    Citation,
+    VectorChunk,
     VectorUpsertRequest,
     VectorUpsertResponse,
+    VectorSearchRequest,
+    VectorSearchResponse,
+    VectorDeleteByDocumentRequest,
+    VectorDeleteByDocumentResponse,
 )
-from app.vector_store import search_chunks, upsert_chunks
-
+from app.vector_store import upsert_chunks, search_chunks, delete_chunks_by_document_id
 app = FastAPI(
     title="AskFlow AI Service",
     description="RAG and Agent service for AskFlow AI platform",
@@ -93,6 +98,8 @@ def rag_ask(request: AskRequest):
         citations=citations,
         debug=debug,
     )
+
+
 @app.post("/vector/upsert", response_model=VectorUpsertResponse)
 def vector_upsert(request: VectorUpsertRequest):
     chunks = [chunk.model_dump() for chunk in request.chunks]
@@ -129,3 +136,11 @@ async def parse_pdf(file: UploadFile = File(...)):
         "chunk_count": len(chunks),
         "chunks": chunks
     }
+@app.post("/vector/delete-by-document", response_model=VectorDeleteByDocumentResponse)
+def vector_delete_by_document(request: VectorDeleteByDocumentRequest):
+    deleted_count = delete_chunks_by_document_id(request.document_id)
+
+    return VectorDeleteByDocumentResponse(
+        document_id=request.document_id,
+        deleted_count=deleted_count,
+    )

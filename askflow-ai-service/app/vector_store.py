@@ -117,3 +117,17 @@ def search_chunks(space_id: int, question: str, top_k: int = 5, min_score: float
         )
 
     return hits
+
+def delete_chunks_by_document_id(document_id: int) -> int:
+    result = _collection.get(
+        where={"document_id": int(document_id)}
+    )
+
+    ids = result.get("ids", [])
+
+    if not ids:
+        return 0
+
+    _collection.delete(ids=ids)
+
+    return len(ids)

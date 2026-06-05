@@ -28,6 +28,7 @@ import java.util.List;
 import com.cookie.askflowbackend.dto.VectorizeKbDocumentResponse;
 import com.cookie.askflowbackend.service.KbVectorService;
 import java.util.ArrayList;
+import com.cookie.askflowbackend.dto.AiVectorDeleteDocumentResponse;
 @Service
 public class KbDocumentServiceImpl implements KbDocumentService {
 
@@ -326,20 +327,35 @@ public class KbDocumentServiceImpl implements KbDocumentService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "document not found");
         }
 
+        // 1. 软删除 document
         document.setStatus(0);
         kbDocumentRepository.save(document);
 
+        // 2. 软删除该文档下的有效 chunk
         List<KbDocumentChunk> chunks = kbDocumentChunkRepository.findByDocumentIdAndStatus(id, 1);
         for (KbDocumentChunk chunk : chunks) {
             chunk.setStatus(0);
         }
         kbDocumentChunkRepository.saveAll(chunks);
 
+        // 3. 更新 Space documentCount
         KbSpace space = kbSpaceRepository.findById(document.getSpaceId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "space not found"));
 
         Integer currentCount = space.getDocumentCount() == null ? 0 : space.getDocumentCount();
         space.setDocumentCount(Math.max(0, currentCount - 1));
         kbSpaceRepository.save(space);
+
+        // 4. 同步删除 ChromaDB 中该 documentId 对应的向量索引
+        AiVectorDeleteDocumentResponse vectorDeleteResponse =
+                kbVectorService.deleteVectorsByDocumentId(id);
+
+        Integer deletedCount = vectorDeleteResponse == null
+                || vectorDeleteResponse.getDeletedCount() == null
+                ? 0
+                : vectorDeleteResponse.getDeletedCount();
+
+        System.out.println("Deleted vectors for documentId=" + id
+                + ", deletedCount=" + deletedCount);
     }
 }
